@@ -25,7 +25,7 @@
 }
 
 .bg-icon {
-    background: url(../img/bg-icon.png) center center repeat;
+    background: url(./../assets/img/bg-icon.png) center center repeat;
     background-size: contain;
 }
 
