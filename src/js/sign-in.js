@@ -7,8 +7,6 @@ let $inputUser,
   $liErrors;
 
 // DECLARACIÓN DE FUNCIONES
-
-
 const validarErrores = function (errores) {
   const tpErrors = {};
   $liErrors.innerHTML = '';
@@ -29,7 +27,7 @@ const validarErrores = function (errores) {
   }
 }
 
-
+// DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', e => {
   $inputUser = d.getElementById('user'),
     $inputPassword = d.getElementById('password'),
