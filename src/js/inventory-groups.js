@@ -1,9 +1,23 @@
+import { API_URL } from './../constants/constants.js';
+import { appendAlert, fetchRequest, showDeleteConfirmationAlert } from './modules/index.js';
+
 const d = document;
 
-let $name, $description, $state, $liErrors, $alertPlaceholder;
-let prueba;
+let $name,
+  $description,
+  $status,
+  $liErrors,
+  $idGroupModal,
+  $nameGroupModal,
+  $descriptionGroupModal,
+  $statusGroupModal,
+  $tbody,
+  dataTable,
+  myModal;
 
 // DECLARACIÓN DE FUNCIONES
+
+
 const validarErrores = function (errores) {
   const tpErrors = {};
   $liErrors.innerHTML = '';
@@ -24,25 +38,103 @@ const validarErrores = function (errores) {
   }
 }
 
-const appendAlert = (message, type) => {
-  const wrapper = document.createElement('div')
-  wrapper.innerHTML = [
-    `<div class="alert alert-${type} alert-dismissible" role="alert">`,
-    `   <div>${message}</div>`,
-    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-    '</div>'
-  ].join('')
+const cargarGrupos = async () => {
+  try {
 
-  $alertPlaceholder.append(wrapper)
-}
+    const errorCatchGrupos = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.log('Ha ocurrido un error al obtener los grupos (callback)');
+    };
+
+    let response = await fetchRequest(null, errorCatchGrupos, `${API_URL}/group/all`);
+
+    if (!response) response = { data: [] };
+
+    if (dataTable !== undefined)
+      dataTable.destroy();
+
+    dataTable = $('#groups').DataTable({
+      language: {
+        "decimal": "",
+        "emptyTable": "No hay información",
+        "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+        "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+        "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+        "infoPostFix": "",
+        "thousands": ",",
+        "lengthMenu": "Mostrar _MENU_ Entradas",
+        "loadingRecords": "Cargando...",
+        "processing": "Procesando...",
+        "search": "Buscar:",
+        "zeroRecords": "Sin resultados encontrados",
+        "paginate": {
+          "first": "Primero",
+          "last": "Ultimo",
+          "next": "Siguiente",
+          "previous": "Anterior"
+        }
+      },
+      data: response.data,
+      "columns": [
+        { "data": 'name' },
+        { "data": 'description' },
+        {
+          data: 'status',
+          title: 'Estado',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data === 1 ? 'Activo' : 'Inactivo';
+            }
+            return data;
+          },
+        },
+        {
+          title: 'Acciones',
+          orderable: false, // No permite ordenar esta columna
+          data: 'id',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return `
+                  <button type="button" id="btn-edit-group" data-id-group="${data}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editGroupModal">
+                    <i class="bi bi-pencil-fill"></i>
+                  </button>
+                  <button type="button" id="btn-delete-group" data-id-group="${data}" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                `
+            }
+            return data;
+          }
+        }
+      ],
+    });
+
+  } catch (err) {
+    console.log(err);
+  }
+
+};
 
 // DELEGACIÓN DE EVENTOS
-d.addEventListener('DOMContentLoaded', e => {
+d.addEventListener('DOMContentLoaded', async e => {
   $name = d.getElementById('name');
   $description = d.getElementById('description');
-  $state = d.getElementById('state');
+  $status = d.getElementById('status');
   $liErrors = d.getElementById('errors');
-  $alertPlaceholder = document.getElementById('liveAlertPlaceholder');
+  $tbody = d.querySelector('#groups > tbody');
+
+  // INPUTS DE LA MODAL
+  $idGroupModal = d.querySelector('#editGroupModal #id-group');
+  $nameGroupModal = d.querySelector('#editGroupModal #name');
+  $descriptionGroupModal = d.querySelector('#editGroupModal #description');
+  $statusGroupModal = d.querySelectorAll('#editGroupModal #status > option');
+
+  myModal = new bootstrap.Modal('#editGroupModal', {
+    keyboard: false
+  });
+
+  cargarGrupos();
 });
 
 d.addEventListener('submit', async e => {
@@ -64,40 +156,121 @@ d.addEventListener('submit', async e => {
     validarErrores(errors);
     if (errors.length) return;
 
-    try {
-      // se hace la petición por AJAX al backend
-      const res = await fetch('http://localhost:3000/group/create-group', {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json; charset=utf-8',
-          'content-type': 'application/json; charset=utf-8',
-          'authorization': `bearer ${localStorage.getItem('JWT')}`,
-        },
-        body: JSON.stringify({ name: $name.value, description: $description.value }),
-      });
-
-
-      if (res.ok) {
-        const response = await res.json();
+    const onErrorResponse = (res, response) => {
+      if (res.status == 400) {
         console.log(response);
-        appendAlert('Grupo creado correctamente', 'success');
-
-      } else {
-        if (res.status == 401) {
-          location.href = "http://127.0.0.1:5500/src/html/login.html";
-        } else if (res.status == 400) {
-          console.log(await res.json());
-          validarErrores([{ error: 'Los datos se han enviado de forma incorrecta. Por favor recargue la página web e inténtelo nuevamente', tp: 3, }]);
-        }
+        validarErrores([{ error: response.message, tp: 3, }]);
       }
-    } catch (err) {
-      console.log(err);
-      if (err instanceof TypeError)
-        console.error('Ha ocurrido un error al realizar el login.');
+    };
+
+    const onErrorCatch = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.error('Ha ocurrido un error al crear el grupo.');
+    };
+
+    // se hace la petición por AJAX al backend
+    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/group/create-group`, 'POST', { name: $name.value, description: $description.value, status: $status.value });
+
+    if (response) {
+      cargarGrupos();
+      appendAlert('Grupo creado correctamente');
     }
+
   }
 });
 
+d.addEventListener('click', async e => {
 
+  if (e.target.matches('#btn-edit-group, #btn-edit-group > *')) {
 
+    const idGroup = (e.target.matches('#btn-edit-group'))
+      ? e.target.getAttribute('data-id-group')
+      : e.target.parentElement.getAttribute('data-id-group');
 
+    console.log(idGroup);
+
+    const onErrorCatch = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.error('Ha ocurrido un error al obtener el grupo.');
+    };
+
+    // se hace la petición por AJAX al backend
+    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/group/find/${idGroup}`);
+
+    if (response) {
+      console.log(response);
+
+      $nameGroupModal.value = response.data.name;
+      $descriptionGroupModal.value = response.data.description;
+      $statusGroupModal.forEach(op => {
+        if (op.value == response.data.status) op.setAttribute('selected', true);
+        else op.removeAttribute('selected');
+      });
+      $idGroupModal.value = idGroup;
+    }
+  }
+
+  if (e.target.matches('#btn-guardar-cambios')) {
+    const indexStatusSelected = d.querySelector('#editGroupModal #status').selectedIndex;
+
+    const onErrorCatch = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.error('Ha ocurrido un error al editar el grupo.');
+    };
+
+    // se hace la petición por AJAX al backend
+    const response = await fetchRequest(
+      null, onErrorCatch, `${API_URL}/group/update-group/${$idGroupModal.value}`, 'PATCH',
+      {
+        id: $idGroupModal.value,
+        name: $nameGroupModal.value,
+        description: $descriptionGroupModal.value,
+        status: $statusGroupModal[indexStatusSelected].value
+      }
+    );
+
+    if (response) {
+      cargarGrupos();
+      myModal.hide();
+      appendAlert('Grupo editado correctamente');
+    }
+  }
+
+  if (e.target.matches('#btn-delete-group, #btn-delete-group > *')) {
+
+    const confirmCallback = async (deleteConfirmationAlert) => {
+      const idGroup = (e.target.matches('#btn-delete-group'))
+        ? e.target.getAttribute('data-id-group')
+        : e.target.parentElement.getAttribute('data-id-group');
+
+      const onErrorCatch = (e) => {
+        console.log(e);
+        if (e instanceof TypeError)
+          console.error('Ha ocurrido un error durante la eliminación del grupo.');
+      };
+
+      const onErrorResponse = () => {
+        deleteConfirmationAlert.fire(
+          'Error',
+          'No se ha podido eliminar el grupo.',
+          'error'
+        );
+      }
+
+      const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/group/delete-group/${idGroup}`, 'DELETE');
+
+      if (response) {
+        cargarGrupos();
+        deleteConfirmationAlert.fire(
+          'Grupo eliminado',
+          'El grupo ha sido eliminado satisfactoriamente.',
+          'success'
+        );
+      }
+    };
+    showDeleteConfirmationAlert('Eliminar Grupo', 'Sí eliminas un grupo, no podrás recuperarlo nuevamente.', confirmCallback);
+  }
+});
