@@ -30,6 +30,9 @@
 
   <!-- Template Stylesheet -->
   <link href="./../css/style.css" rel="stylesheet">
+
+  <!-- Data Tables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
 
 <body>
@@ -69,13 +72,13 @@
       <div class="row g-5 justify-content-center">
 
         <div class="col-lg-7 col-md-12 wow fadeInUp" data-wow-delay="0.5s">
-          <form>
+          <form id="form-products">
             <div class="row g-3">
               <!-- CÓDIGO DEL PRODUCTO -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <input type="text" class="form-control" id="codigo" placeholder="Código del Producto">
-                  <label for="codigo">Código del Producto</label>
+                  <input type="text" class="form-control" id="code" placeholder="Código del Producto">
+                  <label for="code">Código del Producto</label>
                 </div>
               </div>
               <!-- NOMBRE DEL PRODUCTO -->
@@ -85,10 +88,10 @@
                   <label for="name">Nombre Producto</label>
                 </div>
               </div>
-              <!-- GRUPO DE INVENTARIO -->
+              <!-- producto DE INVENTARIO -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <select class="form-control" id="grupo-inventario">
+                  <select class="form-control" id="producto-inventario">
                     <option value="" disabled selected>Seleccione...</option>
                   </select>
                   <label for="grupo-inventario">Grupo Inventario</label>
@@ -104,14 +107,14 @@
               <!-- STOCK MÍNIMO -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <input type="number" class="form-control" id="stock" placeholder="stock">
+                  <input type="number" class="form-control" id="stock-min" placeholder="stock">
                   <label for="stock">Stock Mínimo</label>
                 </div>
               </div>
               <!-- PRECIO -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <input type="number" class="form-control" id="precio" placeholder="precio">
+                  <input type="number" class="form-control" id="price" placeholder="precio">
                   <label for="precio">Precio</label>
                 </div>
               </div>
@@ -125,21 +128,26 @@
               <!-- ESTADO -->
               <div class="col-md-6">
                 <div class="form-floating">
-                  <select class="form-control" id="estado">
+                  <select class="form-control" id="status">
                     <option value="1" selected>Activo</option>
                     <option value="0">Inactivo</option>
                   </select>
-                  <label for="estado">Estado</label>
+                  <label for="status">Estado</label>
                 </div>
               </div>
               <!-- INVENTARIABLE -->
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="" id="inventariable">
-                  <label class="form-check-label" for="inventariable">
+                  <input class="form-check-input" type="checkbox" value="" id="inventoriable">
+                  <label class="form-check-label" for="inventoriable">
                     ¿Es inventariable?
                   </label>
                 </div>
+              </div>
+              <!-- LI DE ERRORES -->
+              <div class="col-12">
+                <ul id="errors">
+                </ul>
               </div>
               <div class="col-12 text-center">
                 <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Crear Producto</button>
@@ -151,6 +159,130 @@
     </div>
   </div>
   <!-- Contact End -->
+
+  <!-- Data Table Start -->
+  <div class="container table-container">
+    <table id="products" class="display" style="width:100%">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Stock</th>
+          <th>Stock Mínimo</th>
+          <th>Precio</th>
+          <th>Inventariable</th>
+          <th>Grupo de Inventario</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Data Table End -->
+
+  <!-- Modal Editar PRODUCTO Start -->
+  <!-- Modal -->
+  <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="editProductModalLabel">Editar Producto</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-edit-group">
+            <div class="row g-3">
+              <!-- CÓDIGO DEL PRODUCTO -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="code" placeholder="Código del Producto">
+                  <label for="code">Código del Producto</label>
+                </div>
+              </div>
+              <!-- NOMBRE DEL PRODUCTO -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="text" class="form-control" id="name" placeholder="Nombre del Producto">
+                  <label for="name">Nombre Producto</label>
+                </div>
+              </div>
+              <!-- producto DE INVENTARIO -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <select class="form-control" id="producto-inventario">
+                    <option value="" disabled selected>Seleccione...</option>
+                  </select>
+                  <label for="grupo-inventario">Grupo Inventario</label>
+                </div>
+              </div>
+              <!-- STOCK -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="number" class="form-control" id="stock" placeholder="stock">
+                  <label for="stock">Stock</label>
+                </div>
+              </div>
+              <!-- STOCK MÍNIMO -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="number" class="form-control" id="stock-min" placeholder="stock">
+                  <label for="stock">Stock Mínimo</label>
+                </div>
+              </div>
+              <!-- PRECIO -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <input type="number" class="form-control" id="price" placeholder="precio">
+                  <label for="precio">Precio</label>
+                </div>
+              </div>
+              <!-- COMISIÓN -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <select class="form-control" id="comision"></select>
+                  <label for="comision">Comisión</label>
+                </div>
+              </div>
+              <!-- ESTADO -->
+              <div class="col-md-6">
+                <div class="form-floating">
+                  <select class="form-control" id="status">
+                    <option value="1" selected>Activo</option>
+                    <option value="0">Inactivo</option>
+                  </select>
+                  <label for="status">Estado</label>
+                </div>
+              </div>
+              <!-- INVENTARIABLE -->
+              <div class="col-md-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="inventoriable">
+                  <label class="form-check-label" for="inventoriable">
+                    ¿Es inventariable?
+                  </label>
+                </div>
+              </div>
+              <!-- ID DEL GRUPO -->
+              <input type="hidden" id="id-product">
+              <!-- LI DE ERRORES -->
+              <div class="col-12">
+                <ul id="errors">
+                </ul>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" id="btn-guardar-cambios" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal Editar producto End -->
 
 
 
@@ -229,6 +361,23 @@
 
   <!-- Template Javascript -->
   <script src="./../js/main.js"></script>
+
+
+  <!-- Data Tables -->
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Custom Javascript -->
+  <script type="module" src="./../js/products.js"></script>
 </body>
 
 </html>
+<!-- $code 1
+$name, 2
+
+$stock, 4
+$stockMin, 5
+
+$price, 6
+$comision,
+$status,
+$inventoriable, -->
