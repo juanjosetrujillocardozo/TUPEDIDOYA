@@ -7,6 +7,7 @@ let $name,
   $description,
   $status,
   $liErrors,
+  $liErrorsModal,
   $idGroupModal,
   $nameGroupModal,
   $descriptionGroupModal,
@@ -18,9 +19,30 @@ let $name,
 // DECLARACIÓN DE FUNCIONES
 
 
-const validarErrores = function (errores) {
+const validarErrores = function (serverError = null, editar = false, limpiar = false) {
+  const $inputName = (editar) ? $nameGroupModal : $name;
+  const $inputDescription = (editar) ? $descriptionGroupModal : $description;
+  const $listaErrores = (editar) ? $liErrorsModal : $liErrors;
+
+
+  const errores = (serverError) ? serverError : [];
+
+  if (!limpiar) {
+    $inputName.value = $inputName.value.trim();
+    $inputDescription.value = $inputDescription.value.trim();
+
+    if (!$inputName.value)
+      errores.push({ tp: 1, error: 'Falta el nombre del grupo' });
+    else if (!(/^[a-zA-ZÁáÉéÍíÓóÚúÜüÑñ0-9\s]+$/.test($inputName.value)))
+      errores.push({ tp: 1, error: 'El nombre de grupo introducido no es válido. Sólo se aceptan letras y números.', });
+
+    if ($inputDescription.value && !(/^[a-zA-ZÁáÉéÍíÓóÚúÜüÑñ0-9\s]+$/.test($inputDescription.value)))
+      errores.push({ tp: 2, error: 'La descripción introducida no es válida. Sólo se aceptan letras y números.', });
+  }
+
   const tpErrors = {};
-  $liErrors.innerHTML = '';
+  $listaErrores.innerHTML = '';
+  console.log(serverError);
   if (errores.length) {
     const $fragment = d.createDocumentFragment();
     errores.forEach(e => {
@@ -29,13 +51,15 @@ const validarErrores = function (errores) {
       $li.textContent = e.error;
       $fragment.appendChild($li);
     });
-    $liErrors.appendChild($fragment);
-    (1 in tpErrors || 3 in tpErrors) ? $name.classList.add('error') : $name.classList.remove('error');
-    (2 in tpErrors || 3 in tpErrors) ? $description.classList.add('error') : $description.classList.remove('error');
+    $listaErrores.appendChild($fragment);
+    (1 in tpErrors) ? $inputName.classList.add('error') : $inputName.classList.remove('error');
+    (2 in tpErrors) ? $inputDescription.classList.add('error') : $inputDescription.classList.remove('error');
   } else {
-    $description.classList.remove('error');
-    $name.classList.remove('error');
+    $inputDescription.classList.remove('error');
+    $inputName.classList.remove('error');
   }
+
+  return errores.length;
 }
 
 const cargarGrupos = async () => {
@@ -84,7 +108,7 @@ const cargarGrupos = async () => {
           title: 'Estado',
           render: function (data, type, row) {
             if (type === 'display') {
-              return data === 1 ? 'Activo' : 'Inactivo';
+              return data === true ? 'Activo' : 'Inactivo';
             }
             return data;
           },
@@ -129,9 +153,14 @@ d.addEventListener('DOMContentLoaded', async e => {
   $nameGroupModal = d.querySelector('#editGroupModal #name');
   $descriptionGroupModal = d.querySelector('#editGroupModal #description');
   $statusGroupModal = d.querySelectorAll('#editGroupModal #status > option');
+  $liErrorsModal = d.querySelector('#errors-modal');
 
   myModal = new bootstrap.Modal('#editGroupModal', {
     keyboard: false
+  });
+
+  d.getElementById('editGroupModal').addEventListener('hide.bs.modal', e => {
+    validarErrores(null, true, true);
   });
 
   cargarGrupos();
@@ -140,25 +169,14 @@ d.addEventListener('DOMContentLoaded', async e => {
 d.addEventListener('submit', async e => {
   if (e.target.matches('#form-inventory-group')) {
     e.preventDefault();
-    const errors = [];
-    $name.value = $name.value.trim();
-    $description.value = $description.value.trim();
 
-    if (!$name.value)
-      errors.push({ tp: 1, error: 'Falta el nombre del grupo' });
-    else if (!(/^[a-zA-Z0-9\s]+$/.test($name.value)))
-      errors.push({ tp: 1, error: 'El nombre de grupo introducido no es válido. Sólo se aceptan letras y números.', });
-
-    if ($description.value && !(/^[a-zA-Z0-9\s]+$/.test($description.value)))
-      errors.push({ tp: 2, error: 'La descripción introducida no es válida. Sólo se aceptan letras y números.', });
-
-
-    validarErrores(errors);
-    if (errors.length) return;
+    const errors = validarErrores();
+    console.log(errors);
+    if (errors) return;
 
     const onErrorResponse = (res, response) => {
+      console.log(response);
       if (res.status == 400) {
-        console.log(response);
         validarErrores([{ error: response.message, tp: 3, }]);
       }
     };
@@ -170,9 +188,10 @@ d.addEventListener('submit', async e => {
     };
 
     // se hace la petición por AJAX al backend
-    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/group/create-group`, 'POST', { name: $name.value, description: $description.value, status: $status.value });
+    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/group/create-group`, 'POST', { name: $name.value, description: $description.value, status: (parseInt($status.value)) ? true : false, });
 
     if (response) {
+      e.target.reset();
       cargarGrupos();
       appendAlert('Grupo creado correctamente');
     }
@@ -221,14 +240,25 @@ d.addEventListener('click', async e => {
         console.error('Ha ocurrido un error al editar el grupo.');
     };
 
+    const errors = validarErrores(null, true);
+    console.log(errors);
+    if (errors) return;
+
+    const onErrorResponse = (res, response) => {
+      console.log(response);
+      if (res.status == 400) {
+        validarErrores([{ error: response.message, tp: 3, }], true);
+      }
+    };
+
     // se hace la petición por AJAX al backend
     const response = await fetchRequest(
-      null, onErrorCatch, `${API_URL}/group/update-group/${$idGroupModal.value}`, 'PATCH',
+      onErrorResponse, onErrorCatch, `${API_URL}/group/update-group/${$idGroupModal.value}`, 'PATCH',
       {
         id: $idGroupModal.value,
         name: $nameGroupModal.value,
         description: $descriptionGroupModal.value,
-        status: $statusGroupModal[indexStatusSelected].value
+        status: (parseInt($statusGroupModal[indexStatusSelected].value)) ? true : false,
       }
     );
 

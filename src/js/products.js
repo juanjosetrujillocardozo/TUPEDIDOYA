@@ -11,16 +11,21 @@ let $code,
   $comision,
   $status,
   $inventoriable,
+  $grupoInventario,
+  $typeProduct,
   $liErrors,
   $idProductModal,
   $codeProductModal,
   $nameProductModal,
+  $grupoInventarioProductModal,
   $stockProductModal,
   $stockMinProductModal,
   $priceProductModal,
   $comisionProductModal,
   $inventoriableProductModal,
   $statusProductModal,
+  $typeProductModal,
+  $liErrorsProductModal,
   $tbody,
   dataTable,
   myModal;
@@ -28,9 +33,56 @@ let $code,
 // DECLARACIÓN DE FUNCIONES
 
 
-const validarErrores = function (errores) {
+const validarErrores = function (serverError = null, editar = false, limpiar = false) {
+  const errores = (serverError) ? serverError : [];
+
+  const $inputCode = editar ? $codeProductModal : $code;
+  const $inputName = editar ? $nameProductModal : $name;
+  const $inputGrupoInventario = editar ? $grupoInventarioProductModal : $grupoInventario;
+  const $inputStock = editar ? $stockProductModal : $stock;
+  const $inputStockMin = editar ? $stockMinProductModal : $stockMin;
+  const $inputPrice = editar ? $priceProductModal : $price;
+  const $listErrors = editar ? $liErrorsProductModal : $liErrors;
+  const $inputInventoriable = editar ? $inventoriableProductModal : $inventoriable;
+
+  if (!limpiar) {
+
+    $inputName.value = $inputName.value.trim();
+
+    if (!$inputCode.value)
+      errores.push({ tp: 1, error: 'Falta el código del producto' });
+    else if (!(/^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$/.test($inputCode.value)))
+      errores.push({ tp: 1, error: 'El código de producto introducido no es válido. Sólo se aceptan letras, números y guiones medios.', });
+
+    if (!$inputName.value)
+      errores.push({ tp: 2, error: 'Falta el nombre del producto' });
+    else if (!(/^[a-zA-ZÁáÉéÍíÓóÚúÜüÑñ0-9\s]+$/.test($inputName.value)))
+      errores.push({ tp: 2, error: 'El nombre de producto introducido no es válido. Sólo se aceptan letras y números.', });
+
+    if (!$inputGrupoInventario.selectedIndex)
+      errores.push({ tp: 4, error: 'Debe seleccionar un grupo de inventario.', });
+
+    if ($inputInventoriable.checked) {
+
+      if (!$inputStock.value)
+        errores.push({ tp: 5, error: 'Falta el stock del producto' });
+      else if (!(/^[0-9]+$/.test($inputStock.value)))
+        errores.push({ tp: 5, error: 'El stock introducido no es válido. Sólo se aceptan números enteros.', });
+
+      if (!$inputStockMin.value)
+        errores.push({ tp: 6, error: 'Falta el stock mínimo del producto' });
+      else if (!(/^[0-9]+$/.test($inputStockMin.value)) && $inputStockMin > 0)
+        errores.push({ tp: 6, error: 'El stock introducido no es válido. Sólo se aceptan números enteros mayores a cero.', });
+    }
+    if (!$inputPrice.value)
+      errores.push({ tp: 7, error: 'Falta el precio del producto' });
+    else if (!(/^[0-9]+$/.test($inputPrice.value)))
+      errores.push({ tp: 7, error: 'El precio introducido no es válido.', });
+  }
+
   const tpErrors = {};
-  $liErrors.innerHTML = '';
+  console.log($listErrors);
+  $listErrors.innerHTML = '';
   if (errores.length) {
     const $fragment = d.createDocumentFragment();
     errores.forEach(e => {
@@ -40,20 +92,23 @@ const validarErrores = function (errores) {
       $fragment.appendChild($li);
     });
 
-    console.log(tpErrors);
-    $liErrors.appendChild($fragment);
-    (1 in tpErrors || 3 in tpErrors) ? $code.classList.add('error') : $code.classList.remove('error');
-    (2 in tpErrors || 3 in tpErrors) ? $name.classList.add('error') : $name.classList.remove('error');
-    (4 in tpErrors || 3 in tpErrors) ? $stock.classList.add('error') : $stock.classList.remove('error');
-    (5 in tpErrors || 3 in tpErrors) ? $stockMin.classList.add('error') : $stockMin.classList.remove('error');
-    (6 in tpErrors || 3 in tpErrors) ? $price.classList.add('error') : $price.classList.remove('error');
+    $listErrors.appendChild($fragment);
+    (1 in tpErrors) ? $inputCode.classList.add('error') : $inputCode.classList.remove('error');
+    (2 in tpErrors) ? $inputName.classList.add('error') : $inputName.classList.remove('error');
+    (4 in tpErrors) ? $inputGrupoInventario.classList.add('error') : $inputGrupoInventario.classList.remove('error');
+    (5 in tpErrors) ? $inputStock.classList.add('error') : $inputStock.classList.remove('error');
+    (6 in tpErrors) ? $inputStockMin.classList.add('error') : $inputStockMin.classList.remove('error');
+    (7 in tpErrors) ? $inputPrice.classList.add('error') : $inputPrice.classList.remove('error');
   } else {
-    $code.classList.remove('error');
-    $name.classList.remove('error');
-    $stock.classList.remove('error');
-    $stockMin.classList.remove('error');
-    $price.classList.remove('error');
+    $inputCode.classList.remove('error');
+    $inputName.classList.remove('error');
+    $inputStock.classList.remove('error');
+    $inputGrupoInventario.classList.remove('error');
+    $inputStockMin.classList.remove('error');
+    $inputPrice.classList.remove('error');
   }
+
+  return errores.length;
 }
 
 const cargarProductos = async () => {
@@ -96,39 +151,71 @@ const cargarProductos = async () => {
       },
       data: response.data,
       "columns": [
-        { "data": 'code' },
+        {
+          data: 'code',
+          title: 'Código',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data;
+            }
+            return data;
+          },
+        },
         { "data": 'name' },
         {
           data: 'status',
           title: 'Estado',
           render: function (data, type, row) {
+            const txt = data ? 'Activo' : 'Inactivo';
             if (type === 'display') {
-              return data === 1 ? 'Activo' : 'Inactivo';
+              return txt;
             }
-            return data;
+            return txt;
           },
         },
         { "data": 'stock' },
         { "data": 'min_tock' },
-        { "data": 'price' },
+        {
+          data: 'price',
+          title: 'Precio',
+          render: function (data, type, row) {
+            const price = parseInt(data);
+            if (type === 'display') {
+              return price;
+            }
+            return price;
+          },
+        },
         {
           data: 'inventoried',
           title: 'Inventariable',
           render: function (data, type, row) {
+            const txt = data ? 'Inventariable' : 'No inventariable';
             if (type === 'display') {
-              return data ? 'Inventariable' : 'No inventariable';
+              return txt;
             }
-            return data;
+            return txt;
           },
         },
         {
-          data: 'inventory_group',
+          data: 'type',
+          title: 'Tipo',
+          render: function (data, type, row) {
+            const txt = (parseInt(data) === 1) ? 'Producto' : 'Servicio';
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
+          },
+        },
+        {
+          data: 'inventory_group_id',
           title: 'Grupo de inventario',
           render: function (data, type, row) {
             if (type === 'display') {
               return data.name;
             }
-            return data;
+            return data.name;
           },
         },
         {
@@ -158,6 +245,37 @@ const cargarProductos = async () => {
 
 };
 
+const obtenerGruposDeInventario = async (editar = false, idGrupo = null) => {
+  const errorCatchGrupos = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener los grupos ');
+  };
+
+  let response = await fetchRequest(null, errorCatchGrupos, `${API_URL}/group/all`);
+  console.log(response);
+  response.data = response.data.filter(g => g.status);
+
+  const $selectGrupoInventario = editar ? $grupoInventarioProductModal : $grupoInventario;
+
+  if (!response || !response.data.length) {
+    $selectGrupoInventario.innerHTML = `<option>No hay grupos de inventario</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $selectGrupoInventario.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const grupo of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = grupo.name;
+      $option.setAttribute('value', grupo.id);
+      if (editar && grupo.id === idGrupo)
+        $option.setAttribute('selected', 'true');
+      $fragment.appendChild($option);
+    }
+    $selectGrupoInventario.appendChild($fragment);
+
+  }
+};
+
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
   $code = d.getElementById('code');
@@ -166,24 +284,39 @@ d.addEventListener('DOMContentLoaded', async e => {
   $stockMin = d.getElementById('stock-min');
   $price = d.getElementById('price');
   $status = d.getElementById('status');
-  $comision = d.getElementById('comi$comision');
+  $comision = d.getElementById('comision');
   $inventoriable = d.getElementById('inventoriable');
+  $grupoInventario = d.getElementById('grupo-inventario');
+  $typeProduct = d.getElementById('type-product');
   $liErrors = d.getElementById('errors');
   $tbody = d.querySelector('#products > tbody');
+
+  $inventoriable.setAttribute('checked', 'true');
 
   // INPUTS DE LA MODAL
   $idProductModal = d.querySelector('#editProductModal #id-product');
   $codeProductModal = d.querySelector('#editProductModal #code');
   $nameProductModal = d.querySelector('#editProductModal #name');
+  $grupoInventarioProductModal = d.querySelector('#editProductModal #grupo-inventario');
   $stockProductModal = d.querySelector('#editProductModal #stock');
   $stockMinProductModal = d.querySelector('#editProductModal #stock-min');
   $priceProductModal = d.querySelector('#editProductModal #price');
   $comisionProductModal = d.querySelector('#editProductModal #comision');
-  $statusProductModal = d.querySelectorAll('#editProductModal #status > option');
-  $inventoriableProductModal = d.querySelector('#editProductModal #inventoriable');
+  $statusProductModal = d.querySelector('#editProductModal #status');
+  $inventoriableProductModal = d.querySelector('#inventoriable-modal');
+  $typeProductModal = d.querySelector('#editProductModal #type-product');
+  $liErrorsProductModal = d.querySelector('#editProductModal #errors');
+
+  // OBTENEMOS LOS GRUPOS DE INVENTARIO
+
+  await obtenerGruposDeInventario();
 
   myModal = new bootstrap.Modal('#editProductModal', {
     keyboard: false
+  });
+
+  d.getElementById('editProductModal').addEventListener('hide.bs.modal', e => {
+    validarErrores(null, true, true);
   });
 
   cargarProductos();
@@ -192,43 +325,14 @@ d.addEventListener('DOMContentLoaded', async e => {
 d.addEventListener('submit', async e => {
   if (e.target.matches('#form-products')) {
     e.preventDefault();
-    const errors = [];
-    $name.value = $name.value.trim();
 
-    if (!$code.value)
-      errors.push({ tp: 1, error: 'Falta el código del producto' });
-    else if (!(/^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*$/.test($code.value)))
-      errors.push({ tp: 1, error: 'El código de producto introducido no es válido. Sólo se aceptan letras, números y guiones medios.', });
-
-    if (!$name.value)
-      errors.push({ tp: 2, error: 'Falta el nombre del producto' });
-    else if (!(/^[a-zA-Z0-9\s]+$/.test($name.value)))
-      errors.push({ tp: 2, error: 'El nombre de producto introducido no es válido. Sólo se aceptan letras y números.', });
-
-    if (!$stock.value)
-      errors.push({ tp: 4, error: 'Falta el stock del producto' });
-    else if (!(/^[0-9]+$/.test($stock.value)))
-      errors.push({ tp: 4, error: 'El stock introducido no es válido. Sólo se aceptan números enteros.', });
-
-    if (!$stockMin.value)
-      errors.push({ tp: 5, error: 'Falta el stock mínimo del producto' });
-    else if (!(/^[0-9]+$/.test($stockMin.value)) && $stockMin > 0)
-      errors.push({ tp: 5, error: 'El stock introducido no es válido. Sólo se aceptan números enteros mayores a cero.', });
-
-    if (!$price.value)
-      errors.push({ tp: 6, error: 'Falta el precio del producto' });
-    else if (!(/^[0-9]+$/.test($price.value)))
-      errors.push({ tp: 6, error: 'El precio introducido no es válido.', });
-
-
-
-    validarErrores(errors);
-    if (errors.length) return;
+    const errors = validarErrores();
+    if (errors) return;
 
     const onErrorResponse = (res, response) => {
+      console.log(response);
       if (res.status == 400) {
-        console.log(response);
-        validarErrores([{ error: response.message, tp: 3, }]);
+        validarErrores([{ error: response.message }]);
       }
     };
 
@@ -242,16 +346,19 @@ d.addEventListener('submit', async e => {
     const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/product/create-product`, 'POST', {
       code: $code.value,
       name: $name.value,
-      inventory_group: 1,
-      stock: parseInt($stock.value),
-      min_tock: parseInt($stockMin.value),
+      inventory_group_id: parseInt($grupoInventario[$grupoInventario.selectedIndex].value),
+      stock: $inventoriable.checked ? parseInt($stock.value) : null,
+      min_tock: $inventoriable.checked ? parseInt($stockMin.value) : null,
       price: parseInt($price.value),
-      inventoried: $inventoriable.checked
+      inventoried: $inventoriable.checked,
+      type: $typeProduct[$typeProduct.selectedIndex].value,
+      status: parseInt($status[$status.selectedIndex].value) ? true : false,
     });
 
     if (response) {
+      e.target.reset();
       cargarProductos();
-      appendAlert('Grupo creado correctamente');
+      appendAlert('Producto creado correctamente');
     }
 
   }
@@ -270,7 +377,7 @@ d.addEventListener('click', async e => {
     const onErrorCatch = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al obtener el grupo.');
+        console.error('Ha ocurrido un error al obtener el producto.');
     };
 
     // se hace la petición por AJAX al backend
@@ -283,20 +390,53 @@ d.addEventListener('click', async e => {
       $nameProductModal.value = response.data.name;
       $stockProductModal.value = response.data.stock;
       $stockMinProductModal.value = response.data.min_tock;
-      $priceProductModal.value = response.data.price;
+      $priceProductModal.value = parseInt(response.data.price);
       $comisionProductModal.value = "pendiente";
       $inventoriableProductModal.checked = response.data.inventoried;
 
-      $statusProductModal.forEach(op => {
+      $statusProductModal.innerHTML = `
+        <option value="1">Activo</option>
+        <option value="0">Inactivo</option>
+      `;
+
+      $statusProductModal.querySelectorAll('option').forEach(op => {
+        console.log(op.value, response.data.status);
         if (op.value == response.data.status) op.setAttribute('selected', true);
         else op.removeAttribute('selected');
       });
+
+      console.log($typeProductModal);
+
+      $typeProductModal.innerHTML = `
+        <option value="1">Producto</option>
+        <option value="2">Servicio</option>
+      `;
+
+      $typeProductModal.querySelectorAll('option').forEach(op => {
+        console.log(op);
+        console.log(op.value, response.data.type);
+        if (op.value == response.data.type) op.setAttribute('selected', true);
+        else op.removeAttribute('selected');
+      });
+
       $idProductModal.value = idProduct;
+
+      await obtenerGruposDeInventario(true, response.data.inventory_group_id.id);
     }
   }
 
   if (e.target.matches('#btn-guardar-cambios')) {
     const indexStatusSelected = d.querySelector('#editProductModal #status').selectedIndex;
+
+    const errors = validarErrores(null, true);
+    if (errors) return;
+
+    // const onErrorResponse = (res, response) => {
+    //   if (res.status == 400) {
+    //     console.log(response);
+    //     validarErrores([{ error: response.message }]);
+    //   }
+    // };
 
     const onErrorCatch = (e) => {
       console.log(e);
@@ -304,18 +444,36 @@ d.addEventListener('click', async e => {
         console.error('Ha ocurrido un error al editar el producto.');
     };
 
+    console.log({
+      id: $idProductModal.value,
+      code: $codeProductModal.value,
+      name: $nameProductModal.value,
+      inventory_group_id: parseInt($grupoInventarioProductModal[$grupoInventarioProductModal.selectedIndex].value),
+      stock: $inventoriableProductModal.checked ? parseInt($stockProductModal.value) : null,
+      min_tock: $inventoriableProductModal.checked ? parseInt($stockMinProductModal.value) : null,
+      price: parseInt($priceProductModal.value),
+      inventoried: $inventoriableProductModal.checked,
+      typeProduct: $typeProductModal[$typeProductModal.selectedIndex].value,
+      status: parseInt($statusProductModal[$statusProductModal.selectedIndex].value) ? true : false,
+    });
+
     // se hace la petición por AJAX al backend
+    console.log($statusProductModal);
+    console.log($statusProductModal[$statusProductModal.selectedIndex]);
+    console.log($statusProductModal[$statusProductModal.selectedIndex].value);
     const response = await fetchRequest(
       null, onErrorCatch, `${API_URL}/product/update-product/${$idProductModal.value}`, 'PATCH',
       {
         id: $idProductModal.value,
         code: $codeProductModal.value,
         name: $nameProductModal.value,
-        inventory_group: 1,
-        stock: parseInt($stockProductModal.value),
-        min_tock: parseInt($stockMinProductModal.value),
+        inventory_group_id: parseInt($grupoInventarioProductModal[$grupoInventarioProductModal.selectedIndex].value),
+        stock: $inventoriableProductModal.checked ? parseInt($stockProductModal.value) : null,
+        min_tock: $inventoriableProductModal.checked ? parseInt($stockMinProductModal.value) : null,
         price: parseInt($priceProductModal.value),
         inventoried: $inventoriableProductModal.checked,
+        type: $typeProductModal[$typeProductModal.selectedIndex].value,
+        status: parseInt($statusProductModal[$statusProductModal.selectedIndex].value) ? true : false,
       }
     );
 

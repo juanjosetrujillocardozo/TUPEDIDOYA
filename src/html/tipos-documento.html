@@ -43,59 +43,105 @@
   </div>
   <!-- Spinner End -->
 
+  <!-- NAVBAR INICIO -->
+  <div class="container-fluid fixed-top px-0 wow fadeIn" data-wow-delay="0.1s">
+    <div class="top-bar row gx-0 align-items-center d-none d-lg-flex">
+      <div class="col-lg-6 px-5 text-start">
+        <small><i class="fa fa-map-marker-alt me-2"></i>Calle 18 Nº 9-11 Centro ,
+          Girardot, Colombia</small>
+        <small class="ms-4"><i class="fa fa-envelope me-2"></i>ventasdistriyasas@hotmail.com</small>
+      </div>
+      <div class="col-lg-6 px-5 text-end">
+        <small>Follow us:</small>
+        <a class="text-body ms-3" href=""><i class="fab fa-facebook-f"></i></a>
+        <a class="text-body ms-3" href=""><i class="fab fa-twitter"></i></a>
+        <a class="text-body ms-3" href=""><i class="fab fa-linkedin-in"></i></a>
+        <a class="text-body ms-3" href=""><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
 
-
-
-
-  <!-- Page Header Start -->
-  <!-- <div class="container-fluid page-header wow fadeIn" data-wow-delay="0.1s">
-    <div class="container">
-      <h1 class="display-3 mb-3 animated slideInDown">Crear Producto</h1>
-      <nav aria-label="breadcrumb animated slideInDown">
-        <ol class="breadcrumb mb-0">
-          <li class="breadcrumb-item"><a class="text-body" href="#">Home</a></li>
-          <li class="breadcrumb-item"><a class="text-body" href="#">Pages</a></li>
-          <li class="breadcrumb-item text-dark active" aria-current="page">Contact Us</li>
-        </ol>
-      </nav>
-  </div> -->
+    <nav class="navbar navbar-expand-lg navbar-light py-lg-0 px-lg-5 wow fadeIn" data-wow-delay="0.1s">
+      <a href="index.html" class="navbar-brand ms-4 ms-lg-0">
+        <h1 class="fw-bold text-primary m-0">
+          Tu<span class="text-secondary"> Pedido</span> Ya
+        </h1>
+      </a>
+      <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <div class="navbar-nav ms-auto p-4 p-lg-0">
+          <!-- SECCIONES -->
+          <!-- INICIO -->
+          <a href="index.html" class="nav-item nav-link active">Inicio</a>
+          <!-- USUARIOS -->
+          <div class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Usuarios</a>
+            <div class="dropdown-menu m-0">
+              <a href="tipos-documento.html" class="dropdown-item">Tipos de Documento</a>
+              <a href="grupos-inventario.html" class="dropdown-item">Grupos de Inventario</a>
+            </div>
+          </div>
+          <!-- ACERCA DE NOSOTROS -->
+          <a href="about.html" class="nav-item nav-link">Acerca de Nosotros</a>
+          <div class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Inventario</a>
+            <div class="dropdown-menu m-0">
+              <a href="productos.html" class="dropdown-item">Productos</a>
+              <a href="grupos-inventario.html" class="dropdown-item">Grupos de Inventario</a>
+            </div>
+          </div>
+          <div class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
+            <div class="dropdown-menu m-0">
+              <a href="blog.html" class="dropdown-item">Blog</a>
+              <a href="feature.html" class="dropdown-item">Caracteristicas</a>
+              <a href="testimonial.html" class="dropdown-item">Testimonios</a>
+              <a href="404.html" class="dropdown-item">Pagina de error 404</a>
+            </div>
+          </div>
+          <a href="contact.html" class="nav-item nav-link">Contacto</a>
+        </div>
+        <div class="d-none d-lg-flex ms-2">
+          <a class="btn-sm-square bg-white rounded-circle ms-3" href="">
+            <small class="fa fa-search text-body"></small>
+          </a>
+          <a class="btn-sm-square bg-white rounded-circle ms-3" href="login.html">
+            <small class="fa fa-user text-body"></small>
+          </a>
+          <a class="btn-sm-square bg-white rounded-circle ms-3" href="">
+            <small class="fa fa-shopping-bag text-body"></small>
+          </a>
+        </div>
+      </div>
+    </nav>
   </div>
-  <!-- Page Header End -->
+  <!-- NAVBAR FIN -->
 
-  <!-- Form Group Start -->
+  <!-- Contact Start -->
   <div class="container-xxl py-6">
     <div class="container">
       <div class="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-        <h1 class="display-5 mb-3">Grupos de Inventario</h1>
-        <p>En este apartado podrás crear y administrar todos tus grupos de inventario.</p>
+        <h1 class="display-5 mb-3">Tipos de Documento</h1>
+        <p>Crea y administra los tipos de documento asociados a los usuarios del sistema</p>
       </div>
       <div class="row g-5 justify-content-center">
 
         <div class="col-lg-7 col-md-12 wow fadeInUp" data-wow-delay="0.5s">
-          <form id="form-inventory-group">
+          <form id="form-type-documents">
             <div class="row g-3">
-              <!-- NOMBRE DEL GRUPO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="text" class="form-control" id="name" placeholder="Nombre del Grupo">
-                  <label for="name">Nombre Grupo</label>
-                </div>
-              </div>
-              <!-- DESCRIPCIÓN DEL GRUPO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="text" class="form-control" id="description" placeholder="Descripción del Grupo">
-                  <label for="description">Descripción Grupo</label>
-                </div>
-              </div>
-              <!-- ESTADO -->
+              <!-- TIPO DOC -->
               <div class="col-12">
                 <div class="form-floating">
-                  <select class="form-control" id="status">
-                    <option value="1" selected>Activo</option>
-                    <option value="0">Inactivo</option>
-                  </select>
-                  <label for="status">Estado</label>
+                  <input type="text" class="form-control" id="tp-documento" placeholder="">
+                  <label for="tp-documento">Tipo Documento</label>
+                </div>
+              </div>
+              <!-- DETALLE -->
+              <div class="col-12">
+                <div class="form-floating">
+                  <textarea class="form-control" id="detalle-documento" placeholder="" cols="30" rows="10"></textarea>
+                  <label for="detalle-documento">Detalle</label>
                 </div>
               </div>
               <!-- LI DE ERRORES -->
@@ -104,7 +150,7 @@
                 </ul>
               </div>
               <div class="col-12 text-center">
-                <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Crear Grupo</button>
+                <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Crear Producto</button>
               </div>
             </div>
           </form>
@@ -112,18 +158,16 @@
       </div>
     </div>
   </div>
-  <!-- Form Group End -->
-
+  <!-- Contact End -->
 
   <!-- Data Table Start -->
-  <div class="container">
-    <table id="groups" class="display" style="width:100%">
+  <div class="container table-container">
+    <table id="type-documents" class="display" style="width:100%">
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Descripción</th>
-          <th>Estado</th>
-          <th>Acciones</th>
+          <th>Tipo Documento</th>
+          <th>Detalle</th>
+          <th></th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -132,47 +176,38 @@
 
   <!-- Data Table End -->
 
-  <!-- Modal Editar Grupo Start -->
+  <!-- Modal Editar PRODUCTO Start -->
   <!-- Modal -->
-  <div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModalLabel" aria-hidden="true">
+  <div class="modal fade" id="editTypeDocumenModal" tabindex="-1" aria-labelledby="editTypeDocumenModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="editGroupModalLabel">Editar Grupo</h1>
+          <h1 class="modal-title fs-5" id="editTypeDocumenModalLabel">Editar Producto</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="form-edit-group">
+          <form id="form-edit-type-document">
             <div class="row g-3">
-              <!-- NOMBRE DEL GRUPO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="text" class="form-control" id="name" placeholder="Nombre del Grupo">
-                  <label for="name">Nombre Grupo</label>
-                </div>
-              </div>
-              <!-- DESCRIPCIÓN DEL GRUPO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="text" class="form-control" id="description" placeholder="Descripción del Grupo">
-                  <label for="description">Descripción Grupo</label>
-                </div>
-              </div>
-              <!-- ESTADO -->
+              <!-- TIPO DOC -->
               <div class="col-12">
                 <div class="form-floating">
-                  <select class="form-control" id="status">
-                    <option value="1" selected>Activo</option>
-                    <option value="0">Inactivo</option>
-                  </select>
-                  <label for="status">Estado</label>
+                  <input type="text" class="form-control" id="tp-documento" placeholder="">
+                  <label for="tp-documento">Tipo Documento</label>
                 </div>
               </div>
-              <!-- ID DEL GRUPO -->
-              <input type="hidden" id="id-group">
+              <!-- DETALLE -->
+              <div class="col-12">
+                <div class="form-floating">
+                  <textarea class="form-control" id="detalle-documento" placeholder="" cols="30" rows="10"></textarea>
+                  <label for="detalle-documento">Detalle</label>
+                </div>
+              </div>
+              <!-- ID DEL TIPO DE DOCUMENTO -->
+              <input type="hidden" id="id-type-document">
               <!-- LI DE ERRORES -->
               <div class="col-12">
-                <ul id="errors-modal">
+                <ul id="errors">
                 </ul>
               </div>
             </div>
@@ -185,7 +220,8 @@
       </div>
     </div>
   </div>
-  <!-- Modal Editar Grupo End -->
+  <!-- Modal Editar producto End -->
+
 
 
 
@@ -264,12 +300,12 @@
   <!-- Template Javascript -->
   <script src="./../js/main.js"></script>
 
+
   <!-- Data Tables -->
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Custom Javascript -->
-  <script type="module" src="./../js/inventory-groups.js"></script>
-
+  <script src="./../js/type-document.js" type="module"></script>
 </body>
 
 </html>

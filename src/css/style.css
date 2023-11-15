@@ -384,7 +384,9 @@
 }
 
 /* ESTILOS PROPIOS */
-#errors {
+#errors,
+#errors-modal,
+.errors {
   color: #F65005;
 }
 
@@ -394,13 +396,36 @@
   box-shadow: 0 0 0 0.25rem rgba(184, 21, 21, 0.25);
 }
 
+/* 
 #alert-container {
   margin: 10px 20px 0 0;
   position: fixed;
   right: 0;
   z-index: 9000;
+} */
+
+#alert-container {
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, 20%);
+  z-index: 2000;
+  transition: visibility 0.5s, opacity 0.5s linear;
+  text-align: center;
+}
+
+.hide-alert {
+  visibility: hidden;
+  opacity: 0;
 }
 
 .table-container {
   overflow-x: auto;
+}
+
+/* MEDIA QUERYS */
+
+@media screen and (min-width: 425px) and (max-width: 629px) {
+  #alert-container {
+    width: 70%;
+  }
 }
