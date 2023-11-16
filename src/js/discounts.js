@@ -3,19 +3,17 @@ import { appendAlert, fetchRequest, showDeleteConfirmationAlert } from './module
 
 const d = document;
 
-let $nombreComision,
+let $nombreDescuento,
   $porcentaje,
-  $tipoComision,
   $descripcion,
   $montoMinimo,
   $liErrors,
-  $nombreComisionModal,
-  $porcentajeComisionModal,
-  $tipoComisionComisionModal,
-  $descripcionComisionModal,
-  $montoMinimoComisionModal,
-  $liErrorsComisionModal,
-  $idComisionModal,
+  $nombreDescuentoModal,
+  $porcentajeDescuentoModal,
+  $descripcionDescuentoModal,
+  $montoMinimoDescuentoModal,
+  $liErrorsDescuentoModal,
+  $idDescuentoModal,
   myModal,
   dataTable;
 
@@ -25,13 +23,12 @@ let $nombreComision,
 const validarErrores = function (serverError = null, editar = false, limpiar = false) {
   const errores = (serverError) ? serverError : [];
 
-  const $inputNombre = editar ? $nombreComisionModal : $nombreComision;
-  const $inputPorcentaje = editar ? $porcentajeComisionModal : $porcentaje;
-  const $inputTpComision = editar ? $tipoComisionComisionModal : $tipoComision;
-  const $inputDescripcion = editar ? $descripcionComisionModal : $descripcion;
-  const $inputMontoMinimo = editar ? $montoMinimoComisionModal : $montoMinimo;
+  const $inputNombre = editar ? $nombreDescuentoModal : $nombreDescuento;
+  const $inputPorcentaje = editar ? $porcentajeDescuentoModal : $porcentaje;
+  const $inputDescripcion = editar ? $descripcionDescuentoModal : $descripcion;
+  const $inputMontoMinimo = editar ? $montoMinimoDescuentoModal : $montoMinimo;
 
-  const $listErrors = editar ? $liErrorsComisionModal : $liErrors;
+  const $listErrors = editar ? $liErrorsDescuentoModal : $liErrors;
 
 
   if (!limpiar) {
@@ -40,9 +37,9 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     $inputDescripcion.value = $inputDescripcion.value.trim();
 
     if (!$inputNombre.value)
-      errores.push({ tp: 1, error: 'Falta el nombre de la comisión' });
+      errores.push({ tp: 1, error: 'Falta el nombre del descuento' });
     else if (!(/^[a-zA-ZÁáÉéÍíÓóÚúÜüÑñ0-9\s]+$/.test($inputNombre.value)))
-      errores.push({ tp: 1, error: 'El nombre de comisión no es válido. Sólo se aceptan letras y números', });
+      errores.push({ tp: 1, error: 'El nombre del descuento no es válido. Sólo se aceptan letras y números', });
 
     if (!$inputPorcentaje.value)
       errores.push({ tp: 2, error: 'Falta el porcentaje.', });
@@ -51,11 +48,8 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     else if (parseInt($inputPorcentaje.value) < 0 || parseInt($inputPorcentaje.value) > 100)
       errores.push({ tp: 2, error: 'El porcentaje debe ser mayor a 0 y menor que 100.', });
 
-    if (!$inputTpComision.selectedIndex)
-      errores.push({ tp: 3, error: 'Debe seleccionar un tipo de comisión', });
-
     if (!$inputDescripcion.value)
-      errores.push({ tp: 4, error: 'Falta la descripción de la comisión' });
+      errores.push({ tp: 4, error: 'Falta la descripción del descuento' });
 
 
     if (!$inputMontoMinimo.value)
@@ -80,15 +74,11 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     $listErrors.appendChild($fragment);
     (1 in tpErrors) ? $inputNombre.classList.add('error') : $inputNombre.classList.remove('error');
     (2 in tpErrors) ? $inputPorcentaje.classList.add('error') : $inputPorcentaje.classList.remove('error');
-    (3 in tpErrors) ? $inputTpComision
-      .classList.add('error') : $inputTpComision
-        .classList.remove('error');
     (4 in tpErrors) ? $inputDescripcion.classList.add('error') : $inputDescripcion.classList.remove('error');
     (5 in tpErrors) ? $inputMontoMinimo.classList.add('error') : $inputMontoMinimo.classList.remove('error');
   } else {
     $inputNombre.classList.remove('error');
     $inputPorcentaje.classList.remove('error');
-    $inputTpComision.classList.remove('error');
     $inputDescripcion.classList.remove('error');
     $inputMontoMinimo.classList.remove('error');
   }
@@ -96,16 +86,16 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   return errores.length;
 }
 
-const cargarComisiones = async () => {
+const cargarDescuentos = async () => {
   try {
 
-    const errorCatchProductos = (e) => {
+    const errorCatchDescuentos = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.log('Ha ocurrido un error al obtener las comisiones');
+        console.log('Ha ocurrido un error al obtener los descuentos');
     };
 
-    let response = await fetchRequest(null, errorCatchProductos, `${API_URL}/commission/all`);
+    let response = await fetchRequest(null, errorCatchDescuentos, `${API_URL}/discount/all`);
 
     console.log(response);
     if (!response) response = { data: [] };
@@ -113,7 +103,7 @@ const cargarComisiones = async () => {
     if (dataTable !== undefined)
       dataTable.destroy();
 
-    dataTable = $('#comisions').DataTable({
+    dataTable = $('#discounts').DataTable({
       language: {
         "decimal": "",
         "emptyTable": "No hay información",
@@ -148,34 +138,6 @@ const cargarComisiones = async () => {
             return porcentaje;
           }
         },
-        {
-          title: 'Tipo de Comisión',
-          data: 'type',
-          render: function (data, type, row) {
-            let txt;
-            switch (data) {
-              case '1':
-                txt = 'Producto';
-                break;
-
-              case '2':
-                txt = 'Zona';
-                break;
-
-              case '3':
-                txt = 'General';
-                break;
-
-              case '4':
-                txt = 'Monto';
-                break;
-            }
-            if (type === 'display') {
-              return txt
-            }
-            return txt;
-          }
-        },
         { data: 'description' },
         {
           title: 'Monto Mínimo',
@@ -195,10 +157,10 @@ const cargarComisiones = async () => {
           render: function (data, type, row) {
             if (type === 'display') {
               return `
-                  <button type="button" id="btn-edit-product" data-id-comision="${data}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editComisionsModal">
+                  <button type="button" id="btn-edit-discount" data-id-discount="${data}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editDiscountsModal">
                     <i class="bi bi-pencil-fill"></i>
                   </button>
-                  <button type="button" id="btn-delete-product" data-id-comision="${data}" class="btn btn-secondary btn-sm">
+                  <button type="button" id="btn-delete-discount" data-id-discount="${data}" class="btn btn-secondary btn-sm">
                     <i class="bi bi-trash-fill"></i>
                   </button>
                 `
@@ -218,37 +180,35 @@ const cargarComisiones = async () => {
 
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
-  $nombreComision = d.getElementById('name');
+  $nombreDescuento = d.getElementById('name');
   $porcentaje = d.getElementById('percentaje');
-  $tipoComision = d.getElementById('type');
   $descripcion = d.getElementById('description');
   $montoMinimo = d.getElementById('min-amount');
   $liErrors = d.getElementById('errors');
 
 
   // INPUTS DE LA MODAL
-  $nombreComisionModal = d.querySelector('#editComisionsModal #name');
-  $porcentajeComisionModal = d.querySelector('#editComisionsModal #percentaje');
-  $tipoComisionComisionModal = d.querySelector('#editComisionsModal #type');
-  $descripcionComisionModal = d.querySelector('#editComisionsModal #description');
-  $montoMinimoComisionModal = d.querySelector('#editComisionsModal #min-amount');
-  $idComisionModal = d.querySelector('#editComisionsModal #id-comision-modal');
-  $liErrorsComisionModal = d.querySelector('#editComisionsModal #errors');
+  $nombreDescuentoModal = d.querySelector('#editDiscountsModal #name');
+  $porcentajeDescuentoModal = d.querySelector('#editDiscountsModal #percentaje');
+  $descripcionDescuentoModal = d.querySelector('#editDiscountsModal #description');
+  $montoMinimoDescuentoModal = d.querySelector('#editDiscountsModal #min-amount');
+  $idDescuentoModal = d.querySelector('#editDiscountsModal #id-discount-modal');
+  $liErrorsDescuentoModal = d.querySelector('#editDiscountsModal #errors');
 
 
-  myModal = new bootstrap.Modal('#editComisionsModal', {
+  myModal = new bootstrap.Modal('#editDiscountsModal', {
     keyboard: false
   });
 
-  d.getElementById('editComisionsModal').addEventListener('hide.bs.modal', e => {
+  d.getElementById('editDiscountsModal').addEventListener('hide.bs.modal', e => {
     validarErrores(null, true, true);
   });
 
-  cargarComisiones();
+  cargarDescuentos();
 }); //ok
 
 d.addEventListener('submit', async e => {
-  if (e.target.matches('#form-comisions')) {
+  if (e.target.matches('#form-discounts')) {
     e.preventDefault();
 
     const errors = validarErrores();
@@ -264,22 +224,21 @@ d.addEventListener('submit', async e => {
     const onErrorCatch = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al crear la comisión.');
+        console.error('Ha ocurrido un error al crear el descuento.');
     };
 
     // se hace la petición por AJAX al backend
-    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/commission/create-commission`, 'POST', {
-      name: $nombreComision.value,
+    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/discount/create-discount`, 'POST', {
+      name: $nombreDescuento.value,
       percentage: parseFloat($porcentaje.value),
-      type: $tipoComision[$tipoComision.selectedIndex].value,
       description: $descripcion.value,
       minimum_amount: parseInt($montoMinimo.value),
     });
 
     if (response) {
       e.target.reset();
-      cargarComisiones();
-      appendAlert('Comisión creada correctamente');
+      cargarDescuentos();
+      appendAlert('Descuento creado correctamente');
     }
 
   }
@@ -287,38 +246,33 @@ d.addEventListener('submit', async e => {
 
 d.addEventListener('click', async e => {
 
-  if (e.target.matches('#btn-edit-product, #btn-edit-product > *')) {
+  if (e.target.matches('#btn-edit-discount, #btn-edit-discount > *')) {
 
-    const idComision = (e.target.matches('#btn-edit-product'))
-      ? e.target.getAttribute('data-id-comision')
-      : e.target.parentElement.getAttribute('data-id-comision');
+    const idDescuento = (e.target.matches('#btn-edit-discount'))
+      ? e.target.getAttribute('data-id-discount')
+      : e.target.parentElement.getAttribute('data-id-discount');
 
-    console.log(idComision);
+    console.log(idDescuento);
 
     const onErrorCatch = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al obtener la comisión.');
+        console.error('Ha ocurrido un error al obtener el descuento.');
     };
 
     // se hace la petición por AJAX al backend
-    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/commission/find/${idComision}`);
+    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/discount/find/${idDescuento}`);
 
     if (response) {
       console.log(response);
 
-      $nombreComisionModal.value = response.data.name;
-      $porcentajeComisionModal.value = response.data.percentage;
-      $tipoComisionComisionModal.querySelectorAll('option').forEach(op => {
-        if (op.value == response.data.type)
-          op.setAttribute('selected', 'true');
-        else
-          op.removeAttribute('selected');
-      });
-      $descripcionComisionModal.value = response.data.description;
-      $montoMinimoComisionModal.value = parseInt(response.data.minimum_amount);
+      $nombreDescuentoModal.value = response.data.name;
+      $porcentajeDescuentoModal.value = response.data.percentage;
 
-      $idComisionModal.value = idComision;
+      $descripcionDescuentoModal.value = response.data.description;
+      $montoMinimoDescuentoModal.value = parseInt(response.data.minimum_amount);
+
+      $idDescuentoModal.value = idDescuento;
 
     }
   }
@@ -331,63 +285,62 @@ d.addEventListener('click', async e => {
     const onErrorCatch = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al editar la comisión.');
+        console.error('Ha ocurrido un error al editar el descuento.');
     };
 
     // se hace la petición por AJAX al backend
 
     const response = await fetchRequest(
-      null, onErrorCatch, `${API_URL}/commission/update-commission/${$idComisionModal.value}`, 'PATCH',
+      null, onErrorCatch, `${API_URL}/discount/update-discount/${$idDescuentoModal.value}`, 'PATCH',
       {
-        name: $nombreComisionModal.value,
-        percentage: parseFloat($porcentajeComisionModal.value),
-        type: $tipoComisionComisionModal[$tipoComisionComisionModal.selectedIndex].value,
-        description: $descripcionComisionModal.value,
-        minimum_amount: parseInt($montoMinimoComisionModal.value),
+        name: $nombreDescuentoModal.value,
+        percentage: parseFloat($porcentajeDescuentoModal.value),
+        description: $descripcionDescuentoModal.value,
+        minimum_amount: parseInt($montoMinimoDescuentoModal.value),
       }
     );
 
     if (response) {
-      cargarComisiones();
+      cargarDescuentos();
       myModal.hide();
-      appendAlert('Comisión editada correctamente');
+      appendAlert('Descuento editado correctamente');
     }
   }
 
-  if (e.target.matches('#btn-delete-product, #btn-delete-product > *')) {
+  if (e.target.matches('#btn-delete-discount, #btn-delete-discount > *')) {
 
     const confirmCallback = async (deleteConfirmationAlert) => {
-      const idComision = (e.target.matches('#btn-delete-product'))
-        ? e.target.getAttribute('data-id-comision')
-        : e.target.parentElement.getAttribute('data-id-comision');
+      const idDescuento = (e.target.matches('#btn-delete-discount'))
+        ? e.target.getAttribute('data-id-discount')
+        : e.target.parentElement.getAttribute('data-id-discount');
 
       const onErrorCatch = (e) => {
         console.log(e);
         if (e instanceof TypeError)
-          console.error('Ha ocurrido un error durante la eliminación de la comisión.');
+          console.error('Ha ocurrido un error durante la eliminación del descuento.');
       };
 
       const onErrorResponse = (res, response) => {
         deleteConfirmationAlert.fire(
           'Error',
-          (res.status === 422) ? 'No se puede eliminar la comisión. La comisión que deseas eliminar ya se encuentra en uso dentro del sistema' : 'No se ha podido eliminar la comisión.',
+          (res.status === 422) ? 'No se puede eliminar el descuento. El descuento que deseas eliminar ya se encuentra en uso dentro del sistema' : 'No se ha podido eliminar el descuento.',
           'error'
         );
       }
 
-      const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/commission/delete-commission/${idComision}`, 'DELETE');
+      const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/discount/delete-discount/${idDescuento}`, 'DELETE');
 
       if (response) {
-        cargarComisiones();
+        cargarDescuentos();
         deleteConfirmationAlert.fire(
-          'Comisión eliminada',
-          'La comisión ha sido eliminada satisfactoriamente.',
+          'Descuento eliminado',
+          'El descuento ha sido eliminado satisfactoriamente.',
           'success'
         );
       } else {
         console.log(response);
       }
     };
-    showDeleteConfirmationAlert('Eliminar comisión', 'Sí eliminas una comisión, no podrás recuperarla nuevamente.', confirmCallback);
+    showDeleteConfirmationAlert('Eliminar descuento', 'Sí eliminas un descuento, no podrás recuperarlo nuevamente.', confirmCallback);
   }
 });

@@ -122,13 +122,13 @@
   <div class="container-xxl py-6">
     <div class="container">
       <div class="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-        <h1 class="display-5 mb-3">Comisiones</h1>
-        <p>Crea y administra las comisiones que otorgarás a los colaboradores de tú empresa</p>
+        <h1 class="display-5 mb-3">Descuentos</h1>
+        <p>Crea y administra los descuentos que otorgarás a los clientes de tú empresa</p>
       </div>
       <div class="row g-5 justify-content-center">
 
         <div class="col-lg-7 col-md-12 wow fadeInUp" data-wow-delay="0.5s">
-          <form id="form-comisions">
+          <form id="form-discounts">
             <div class="row g-3">
               <!-- NOMBRE -->
               <div class="col-12">
@@ -142,19 +142,6 @@
                 <div class="form-floating">
                   <input type="text" class="form-control" id="percentaje" placeholder="">
                   <label for="percentaje">Porcentaje</label>
-                </div>
-              </div>
-              <!-- TIPO COMISIÓN -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="type" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                    <option value="1">Producto</option>
-                    <option value="2">Zona</option>
-                    <option value="3">General</option>
-                    <option value="4">Monto</option>
-                  </select>
-                  <label for="type">Tipo de Comisión</label>
                 </div>
               </div>
               <!-- DESCRIPCIÓN -->
@@ -177,7 +164,7 @@
                 </ul>
               </div>
               <div class="col-12 text-center">
-                <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Crear Comisión</button>
+                <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Crear Descuento</button>
               </div>
             </div>
           </form>
@@ -189,12 +176,11 @@
 
   <!-- Data Table Start -->
   <div class="container table-container">
-    <table id="comisions" class="display" style="width:100%">
+    <table id="discounts" class="display" style="width:100%">
       <thead>
         <tr>
           <th>Nombre</th>
           <th>Porcentaje</th>
-          <th>Tipo de Comisión</th>
           <th>Descripción</th>
           <th>Monto Mínimo</th>
           <th></th>
@@ -206,14 +192,14 @@
 
   <!-- Data Table End -->
 
-  <!-- Modal Editar COMISIÓN Start -->
+  <!-- Modal Editar DESCUENTO Start -->
   <!-- Modal -->
-  <div class="modal fade" id="editComisionsModal" tabindex="-1" aria-labelledby="editComisionsModalLabel"
+  <div class="modal fade" id="editDiscountsModal" tabindex="-1" aria-labelledby="editDiscountsModalLabel"
     aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="editComisionsModalLabel">Editar Comisión</h1>
+          <h1 class="modal-title fs-5" id="editDiscountsModalLabel">Editar Descuento</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -233,19 +219,6 @@
                   <label for="percentaje">Porcentaje</label>
                 </div>
               </div>
-              <!-- TIPO COMISIÓN -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="type" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                    <option value="1">Producto</option>
-                    <option value="2">Zona</option>
-                    <option value="3">General</option>
-                    <option value="4">Monto</option>
-                  </select>
-                  <label for="type">Tipo de Comisión</label>
-                </div>
-              </div>
               <!-- DESCRIPCIÓN -->
               <div class="col-12">
                 <div class="form-floating">
@@ -260,7 +233,7 @@
                   <label for="description">Monto Mínimo</label>
                 </div>
               </div>
-              <input type="hidden" id="id-comision-modal">
+              <input type="hidden" id="id-discount-modal">
               <!-- LI DE ERRORES -->
               <div class="col-12">
                 <ul id="errors">
@@ -361,7 +334,7 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Custom Javascript -->
-  <script src="./../js/comisions.js" type="module"></script>
+  <script src="./../js/discounts.js" type="module"></script>
 </body>
 
 </html>

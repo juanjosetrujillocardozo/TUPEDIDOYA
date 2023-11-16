@@ -44,6 +44,8 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   const $inputPrice = editar ? $priceProductModal : $price;
   const $listErrors = editar ? $liErrorsProductModal : $liErrors;
   const $inputInventoriable = editar ? $inventoriableProductModal : $inventoriable;
+  const $inputComision = editar ? $comisionProductModal : $comision;
+
 
   if (!limpiar) {
 
@@ -78,6 +80,9 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
       errores.push({ tp: 7, error: 'Falta el precio del producto' });
     else if (!(/^[0-9]+$/.test($inputPrice.value)))
       errores.push({ tp: 7, error: 'El precio introducido no es válido.', });
+
+    if (!$inputComision.selectedIndex)
+      errores.push({ tp: 8, error: 'Debe seleccionar una comisión.', });
   }
 
   const tpErrors = {};
@@ -99,6 +104,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     (5 in tpErrors) ? $inputStock.classList.add('error') : $inputStock.classList.remove('error');
     (6 in tpErrors) ? $inputStockMin.classList.add('error') : $inputStockMin.classList.remove('error');
     (7 in tpErrors) ? $inputPrice.classList.add('error') : $inputPrice.classList.remove('error');
+    (8 in tpErrors) ? $inputComision.classList.add('error') : $inputComision.classList.remove('error');
   } else {
     $inputCode.classList.remove('error');
     $inputName.classList.remove('error');
@@ -106,6 +112,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     $inputGrupoInventario.classList.remove('error');
     $inputStockMin.classList.remove('error');
     $inputPrice.classList.remove('error');
+    $inputComision.classList.remove('error');
   }
 
   return errores.length;
@@ -209,6 +216,17 @@ const cargarProductos = async () => {
           },
         },
         {
+          data: 'commission_id',
+          title: 'Comisión',
+          render: function (data, type, row) {
+            const txt = (!data) ? 'Sin comisión asignada' : data.name;
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
+          },
+        },
+        {
           data: 'inventory_group_id',
           title: 'Grupo de inventario',
           render: function (data, type, row) {
@@ -276,6 +294,37 @@ const obtenerGruposDeInventario = async (editar = false, idGrupo = null) => {
   }
 };
 
+const obtenerComisiones = async (editar = false, idComision = null) => {
+  const errorCatchGrupos = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener las comisiones');
+  };
+
+  idComision = (!idComision) ? 0 : idComision.id;
+  let response = await fetchRequest(null, errorCatchGrupos, `${API_URL}/commission/all`);
+  // response.data = response.data.filter(g => g.status);
+
+  const $selectComisiones = editar ? $comisionProductModal : $comision;
+
+  if (!response || !response.data.length) {
+    $selectComisiones.innerHTML = `<option>No hay comisiones</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $selectComisiones.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const comision of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = comision.name;
+      $option.setAttribute('value', comision.id);
+      if (editar && comision.id === idComision)
+        $option.setAttribute('selected', 'true');
+      $fragment.appendChild($option);
+    }
+    $selectComisiones.appendChild($fragment);
+
+  }
+};
+
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
   $code = d.getElementById('code');
@@ -310,6 +359,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   // OBTENEMOS LOS GRUPOS DE INVENTARIO
 
   await obtenerGruposDeInventario();
+  await obtenerComisiones();
 
   myModal = new bootstrap.Modal('#editProductModal', {
     keyboard: false
@@ -353,6 +403,7 @@ d.addEventListener('submit', async e => {
       inventoried: $inventoriable.checked,
       type: $typeProduct[$typeProduct.selectedIndex].value,
       status: parseInt($status[$status.selectedIndex].value) ? true : false,
+      commission: parseInt($comision[$comision.selectedIndex].value),
     });
 
     if (response) {
@@ -422,6 +473,7 @@ d.addEventListener('click', async e => {
       $idProductModal.value = idProduct;
 
       await obtenerGruposDeInventario(true, response.data.inventory_group_id.id);
+      await obtenerComisiones(true, response.data.commission_id);
     }
   }
 
@@ -444,6 +496,8 @@ d.addEventListener('click', async e => {
         console.error('Ha ocurrido un error al editar el producto.');
     };
 
+    console.log(parseInt($comisionProductModal[$comisionProductModal.selectedIndex].value));
+
     console.log({
       id: $idProductModal.value,
       code: $codeProductModal.value,
@@ -455,12 +509,10 @@ d.addEventListener('click', async e => {
       inventoried: $inventoriableProductModal.checked,
       typeProduct: $typeProductModal[$typeProductModal.selectedIndex].value,
       status: parseInt($statusProductModal[$statusProductModal.selectedIndex].value) ? true : false,
+      commission: parseInt($comisionProductModal[$comisionProductModal.selectedIndex].value),
     });
 
     // se hace la petición por AJAX al backend
-    console.log($statusProductModal);
-    console.log($statusProductModal[$statusProductModal.selectedIndex]);
-    console.log($statusProductModal[$statusProductModal.selectedIndex].value);
     const response = await fetchRequest(
       null, onErrorCatch, `${API_URL}/product/update-product/${$idProductModal.value}`, 'PATCH',
       {
@@ -474,6 +526,8 @@ d.addEventListener('click', async e => {
         inventoried: $inventoriableProductModal.checked,
         type: $typeProductModal[$typeProductModal.selectedIndex].value,
         status: parseInt($statusProductModal[$statusProductModal.selectedIndex].value) ? true : false,
+        commission: parseInt($comisionProductModal[$comisionProductModal.selectedIndex].value),
+
       }
     );
 
