@@ -80,7 +80,7 @@ d.addEventListener('click', async e => {
       if (res.ok) {
         const response = await res.json();
         localStorage.setItem('JWT', response.data.msg.access_token);
-        location.href = "http://127.0.0.1:5500/src/html/index.html";
+        location.href = "http://127.0.0.1:5501/src/html/index.html";
       } else {
         if (res.status == 401) {
           // código http para las credenciales inválidas

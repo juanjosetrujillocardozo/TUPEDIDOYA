@@ -158,6 +158,18 @@
                   <label for="description">Monto Mínimo</label>
                 </div>
               </div>
+              <!-- TIPO DESCUENTO -->
+              <div class="col-12">
+                <div class="form-floating">
+                  <select id="type" class="form-control">
+                    <option value="0" selected disabled>Seleccione...</option>
+                    <option value="1">Producto</option>
+                    <option value="2">Zona</option>
+                    <option value="3">Monto</option>
+                  </select>
+                  <label for="type">Tipo Descuento</label>
+                </div>
+              </div>
               <!-- LI DE ERRORES -->
               <div class="col-12">
                 <ul id="errors">
@@ -183,6 +195,7 @@
           <th>Porcentaje</th>
           <th>Descripción</th>
           <th>Monto Mínimo</th>
+          <th>Tipo Descuento</th>
           <th></th>
         </tr>
       </thead>
@@ -231,6 +244,18 @@
                 <div class="form-floating">
                   <input type="number" class="form-control" id="min-amount" placeholder="">
                   <label for="description">Monto Mínimo</label>
+                </div>
+              </div>
+              <!-- TIPO DESCUENTO -->
+              <div class="col-12">
+                <div class="form-floating">
+                  <select id="type" class="form-control">
+                    <option value="0" selected disabled>Seleccione...</option>
+                    <option value="1">Producto</option>
+                    <option value="2">Zona</option>
+                    <option value="3">Monto</option>
+                  </select>
+                  <label for="type">Tipo Descuento</label>
                 </div>
               </div>
               <input type="hidden" id="id-discount-modal">

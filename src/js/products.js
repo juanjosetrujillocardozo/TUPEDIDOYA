@@ -9,6 +9,7 @@ let $code,
   $stockMin,
   $price,
   $comision,
+  $descuento,
   $status,
   $inventoriable,
   $grupoInventario,
@@ -22,6 +23,7 @@ let $code,
   $stockMinProductModal,
   $priceProductModal,
   $comisionProductModal,
+  $descuentoProductModal,
   $inventoriableProductModal,
   $statusProductModal,
   $typeProductModal,
@@ -45,6 +47,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   const $listErrors = editar ? $liErrorsProductModal : $liErrors;
   const $inputInventoriable = editar ? $inventoriableProductModal : $inventoriable;
   const $inputComision = editar ? $comisionProductModal : $comision;
+  const $inputDescuento = editar ? $descuentoProductModal : $descuento;
 
 
   if (!limpiar) {
@@ -81,8 +84,6 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     else if (!(/^[0-9]+$/.test($inputPrice.value)))
       errores.push({ tp: 7, error: 'El precio introducido no es válido.', });
 
-    if (!$inputComision.selectedIndex)
-      errores.push({ tp: 8, error: 'Debe seleccionar una comisión.', });
   }
 
   const tpErrors = {};
@@ -104,7 +105,6 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     (5 in tpErrors) ? $inputStock.classList.add('error') : $inputStock.classList.remove('error');
     (6 in tpErrors) ? $inputStockMin.classList.add('error') : $inputStockMin.classList.remove('error');
     (7 in tpErrors) ? $inputPrice.classList.add('error') : $inputPrice.classList.remove('error');
-    (8 in tpErrors) ? $inputComision.classList.add('error') : $inputComision.classList.remove('error');
   } else {
     $inputCode.classList.remove('error');
     $inputName.classList.remove('error');
@@ -112,7 +112,6 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     $inputGrupoInventario.classList.remove('error');
     $inputStockMin.classList.remove('error');
     $inputPrice.classList.remove('error');
-    $inputComision.classList.remove('error');
   }
 
   return errores.length;
@@ -227,6 +226,17 @@ const cargarProductos = async () => {
           },
         },
         {
+          data: 'discount_id',
+          title: 'Descuento',
+          render: function (data, type, row) {
+            const txt = (!data) ? 'Sin descuento asignado' : data.name;
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
+          },
+        },
+        {
           data: 'inventory_group_id',
           title: 'Grupo de inventario',
           render: function (data, type, row) {
@@ -325,6 +335,37 @@ const obtenerComisiones = async (editar = false, idComision = null) => {
   }
 };
 
+const obtenerDescuentos = async (editar = false, idDescuento = null) => {
+  const errorCatchDescuentos = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener los descuentos');
+  };
+
+  idDescuento = (!idDescuento) ? 0 : idDescuento.id;
+  let response = await fetchRequest(null, errorCatchDescuentos, `${API_URL}/discount/all`);
+  // response.data = response.data.filter(g => g.status);
+
+  const $selectDescuentos = editar ? $descuentoProductModal : $descuento;
+
+  if (!response || !response.data.length) {
+    $selectDescuentos.innerHTML = `<option>No hay descuentos</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $selectDescuentos.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const descuento of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = descuento.name;
+      $option.setAttribute('value', descuento.id);
+      if (editar && descuento.id === idDescuento)
+        $option.setAttribute('selected', 'true');
+      $fragment.appendChild($option);
+    }
+    $selectDescuentos.appendChild($fragment);
+
+  }
+};
+
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
   $code = d.getElementById('code');
@@ -334,6 +375,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $price = d.getElementById('price');
   $status = d.getElementById('status');
   $comision = d.getElementById('comision');
+  $descuento = d.getElementById('discount');
   $inventoriable = d.getElementById('inventoriable');
   $grupoInventario = d.getElementById('grupo-inventario');
   $typeProduct = d.getElementById('type-product');
@@ -351,6 +393,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $stockMinProductModal = d.querySelector('#editProductModal #stock-min');
   $priceProductModal = d.querySelector('#editProductModal #price');
   $comisionProductModal = d.querySelector('#editProductModal #comision');
+  $descuentoProductModal = d.querySelector('#editProductModal #discount');
   $statusProductModal = d.querySelector('#editProductModal #status');
   $inventoriableProductModal = d.querySelector('#inventoriable-modal');
   $typeProductModal = d.querySelector('#editProductModal #type-product');
@@ -360,6 +403,7 @@ d.addEventListener('DOMContentLoaded', async e => {
 
   await obtenerGruposDeInventario();
   await obtenerComisiones();
+  await obtenerDescuentos();
 
   myModal = new bootstrap.Modal('#editProductModal', {
     keyboard: false
@@ -404,6 +448,7 @@ d.addEventListener('submit', async e => {
       type: $typeProduct[$typeProduct.selectedIndex].value,
       status: parseInt($status[$status.selectedIndex].value) ? true : false,
       commission: parseInt($comision[$comision.selectedIndex].value),
+      discount: parseInt($descuento[$descuento.selectedIndex].value),
     });
 
     if (response) {
@@ -474,6 +519,7 @@ d.addEventListener('click', async e => {
 
       await obtenerGruposDeInventario(true, response.data.inventory_group_id.id);
       await obtenerComisiones(true, response.data.commission_id);
+      await obtenerDescuentos(true, response.data.discount_id);
     }
   }
 
@@ -483,12 +529,12 @@ d.addEventListener('click', async e => {
     const errors = validarErrores(null, true);
     if (errors) return;
 
-    // const onErrorResponse = (res, response) => {
-    //   if (res.status == 400) {
-    //     console.log(response);
-    //     validarErrores([{ error: response.message }]);
-    //   }
-    // };
+    const onErrorResponse = (res, response) => {
+      if (res.status == 400) {
+        console.log(response);
+        validarErrores([{ error: response.message }], true);
+      }
+    };
 
     const onErrorCatch = (e) => {
       console.log(e);
@@ -510,11 +556,12 @@ d.addEventListener('click', async e => {
       typeProduct: $typeProductModal[$typeProductModal.selectedIndex].value,
       status: parseInt($statusProductModal[$statusProductModal.selectedIndex].value) ? true : false,
       commission: parseInt($comisionProductModal[$comisionProductModal.selectedIndex].value),
+      discount: parseInt($descuentoProductModal[$descuentoProductModal.selectedIndex].value),
     });
 
     // se hace la petición por AJAX al backend
     const response = await fetchRequest(
-      null, onErrorCatch, `${API_URL}/product/update-product/${$idProductModal.value}`, 'PATCH',
+      onErrorResponse, onErrorCatch, `${API_URL}/product/update-product/${$idProductModal.value}`, 'PATCH',
       {
         id: $idProductModal.value,
         code: $codeProductModal.value,
@@ -527,7 +574,7 @@ d.addEventListener('click', async e => {
         type: $typeProductModal[$typeProductModal.selectedIndex].value,
         status: parseInt($statusProductModal[$statusProductModal.selectedIndex].value) ? true : false,
         commission: parseInt($comisionProductModal[$comisionProductModal.selectedIndex].value),
-
+        discount: parseInt($descuentoProductModal[$descuentoProductModal.selectedIndex].value),
       }
     );
 

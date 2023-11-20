@@ -1,4 +1,4 @@
-export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null) => {
+export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null, autenticacionRequerida = true) => {
 
   try {
     const dataRequest = {
@@ -19,8 +19,8 @@ export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, me
     if (res.ok) {
       return response;
     } else {
-      if (res.status == 401) {
-        location.href = "http://127.0.0.1:5500/src/html/login.html";
+      if (res.status == 401 && autenticacionRequerida) {
+        location.href = "http://127.0.0.1:5501/src/html/login.html";
       } else {
         console.log(res);
         if (onErrorResponse) onErrorResponse(res, response);

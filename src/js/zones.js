@@ -44,15 +44,18 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     else if (!(/^[a-zA-ZÁáÉéÍíÓóÚúÜüÑñ0-9\s]+$/.test($inputNombre.value)))
       errores.push({ tp: 1, error: 'El nombre de zona no es válido. Sólo se aceptan letras y números', });
 
-    // if (!$inputDepartamento.selectedIndex)
-    //   errores.push({ tp: 2, error: 'Debe seleccionar un departamento', });
+    if (!$inputDepartamento.selectedIndex)
+      errores.push({ tp: 2, error: 'Debe seleccionar un departamento', });
 
-    // if (!$inputCiudad.selectedIndex)
-    //   errores.push({ tp: 3, error: 'Debe seleccionar una ciudad', });
+    if (!$inputCiudad.selectedIndex)
+      errores.push({ tp: 3, error: 'Debe seleccionar una ciudad', });
 
     if (!$inputDescripcion.value)
       errores.push({ tp: 4, error: 'Falta la descripción de la zona' });
 
+  } else {
+    $inputDepartamento.innerHTML = '<option disabled selected>Seleccione...</option>';
+    $inputCiudad.innerHTML = '<option disabled selected>Seleccione...</option>';
   }
 
   const tpErrors = {};
@@ -129,22 +132,20 @@ const cargarZonas = async () => {
           title: 'Departamento',
           data: 'departament_code',
           render: function (data, type, row) {
-            const departamento = 'pendiente';
             if (type === 'display') {
-              return departamento
+              return data
             }
-            return departamento;
+            return data;
           }
         },
         {
           title: 'Ciudad',
           data: 'city_code',
           render: function (data, type, row) {
-            const ciudad = 'pendiente';
             if (type === 'display') {
-              return ciudad
+              return data
             }
-            return ciudad;
+            return data;
           }
         },
         { data: 'description' },
@@ -259,6 +260,65 @@ const obtenerComisiones = async (editar = false, idComision = null) => {
   }
 };
 
+const obtenerDepartamentos = async (editar = false, nombreDepartamento = null) => {
+  const errorCatchDepartamentos = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener los departamentos');
+  };
+
+  let response = await fetchRequest(null, errorCatchDepartamentos, `${API_URL}/locale/states-all`);
+  console.log(response);
+
+  const $selectDepartamentos = editar ? $departamentoZonaModal : $departamento;
+
+  if (!response || !response.data.length) {
+    $selectDepartamentos.innerHTML = `<option>No hay departamentos</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $selectDepartamentos.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const departamento of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = departamento.state_name;
+      $option.setAttribute('value', departamento.state_name);
+      if (editar && departamento.state_name === nombreDepartamento)
+        $option.setAttribute('selected', 'true');
+      $fragment.appendChild($option);
+    }
+    $selectDepartamentos.appendChild($fragment);
+
+  }
+};
+
+const obtenerCiudades = async (nombreDepartamento, editar = false, nombreCiudad = null) => {
+  const errorCatchCiudades = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener las ciudades');
+  };
+
+  let response = await fetchRequest(null, errorCatchCiudades, `${API_URL}/locale/citys-all/${nombreDepartamento}`);
+  console.log(response);
+
+  const $selectCiudades = editar ? $ciudadZonaModal : $ciudad;
+
+  if (!response || !response.data.length) {
+    $selectCiudades.innerHTML = `<option>No hay ciudades</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $selectCiudades.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const ciudad of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = ciudad.city_name;
+      $option.setAttribute('value', ciudad.city_name);
+      if (editar && ciudad.city_name === nombreCiudad)
+        $option.setAttribute('selected', 'true');
+      $fragment.appendChild($option);
+    }
+    $selectCiudades.appendChild($fragment);
+
+  }
+};
 
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
@@ -283,6 +343,7 @@ d.addEventListener('DOMContentLoaded', async e => {
 
   await obtenerDescuentos();
   await obtenerComisiones();
+  await obtenerDepartamentos();
 
 
   myModal = new bootstrap.Modal('#editZonesModal', {
@@ -319,8 +380,8 @@ d.addEventListener('submit', async e => {
     // se hace la petición por AJAX al backend
     const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/zone/create-zone`, 'POST', {
       name: $nombreZona.value,
-      departament_cod: "0",
-      city_code: "0",
+      departament_code: $departamento[$departamento.selectedIndex].value,
+      city_code: $ciudad[$ciudad.selectedIndex].value,
       description: $descripcion.value,
       discount: parseInt((!$descuento.selectedIndex) ? null : $descuento[$descuento.selectedIndex].value),
       commission: parseInt((!$comision.selectedIndex) ? null : $comision[$comision.selectedIndex].value),
@@ -358,18 +419,14 @@ d.addEventListener('click', async e => {
       console.log(response);
 
       $nombreZonaModal.value = response.data.name;
-      // $ciudadZonaModal.value = response.data;
-      // $departamentoZonaModal.querySelectorAll('option').forEach(op => {
-      //   if (op.value == response.data.type)
-      //     op.setAttribute('selected', 'true');
-      //   else
-      //     op.removeAttribute('selected');
-      // });
       $descripcionZonaModal.value = response.data.description;
 
       $idZonaModal.value = idZone;
-      await obtenerDescuentos(true, response.data.discount_id?.id);
-      await obtenerComisiones(true, response.data.commission_id?.id);
+
+      obtenerDescuentos(true, response.data.discount_id?.id);
+      obtenerComisiones(true, response.data.commission_id?.id);
+      obtenerDepartamentos(true, response.data.departament_code);
+      await obtenerCiudades(response.data.departament_code, true, response.data.city_code);
 
     }
   }
@@ -391,8 +448,8 @@ d.addEventListener('click', async e => {
       null, onErrorCatch, `${API_URL}/zone/update-zone/${$idZonaModal.value}`, 'PATCH',
       {
         name: $nombreZonaModal.value,
-        departament_cod: "0",
-        city_code: "0",
+        departament_code: $departamentoZonaModal[$departamentoZonaModal.selectedIndex].value,
+        city_code: $ciudadZonaModal[$ciudadZonaModal.selectedIndex].value,
         description: $descripcionZonaModal.value,
         discount: parseInt((!$descuentoZonaModal.selectedIndex) ? null : $descuentoZonaModal[$descuentoZonaModal.selectedIndex].value),
         commission: parseInt((!$comisionZonaModal.selectedIndex) ? null : $comisionZonaModal[$comisionZonaModal.selectedIndex].value),
@@ -441,5 +498,19 @@ d.addEventListener('click', async e => {
       }
     };
     showDeleteConfirmationAlert('Eliminar zona', 'Sí eliminas una zona, no podrás recuperarla nuevamente.', confirmCallback);
+  }
+});
+
+d.addEventListener('change', e => {
+
+  if (e.target === $departamentoZonaModal) {
+    obtenerCiudades(e.target[e.target.selectedIndex].value, true);
+    return;
+  }
+
+
+  if (e.target.matches('#departament')) {
+    obtenerCiudades(e.target[e.target.selectedIndex].value);
+    return;
   }
 });

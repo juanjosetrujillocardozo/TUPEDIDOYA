@@ -542,6 +542,7 @@ d.addEventListener('click', async e => {
           $option.textContent = elem.name;
           $fragment.appendChild($option);
         });
+        $rolesUserModal.innerHTML = '';
         $rolesUserModal.appendChild($fragment);
       }
 

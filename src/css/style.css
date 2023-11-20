@@ -413,6 +413,12 @@
   text-align: center;
 }
 
+.card-product-name {
+  overflow: hidden;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+}
+
 .hide-alert {
   visibility: hidden;
   opacity: 0;

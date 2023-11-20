@@ -7,11 +7,13 @@ let $nombreDescuento,
   $porcentaje,
   $descripcion,
   $montoMinimo,
+  $tipoDescuento,
   $liErrors,
   $nombreDescuentoModal,
   $porcentajeDescuentoModal,
   $descripcionDescuentoModal,
   $montoMinimoDescuentoModal,
+  $tipoDescuentoModal,
   $liErrorsDescuentoModal,
   $idDescuentoModal,
   myModal,
@@ -27,6 +29,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   const $inputPorcentaje = editar ? $porcentajeDescuentoModal : $porcentaje;
   const $inputDescripcion = editar ? $descripcionDescuentoModal : $descripcion;
   const $inputMontoMinimo = editar ? $montoMinimoDescuentoModal : $montoMinimo;
+  const $inputTipoDescuento = editar ? $tipoDescuentoModal : $tipoDescuento;
 
   const $listErrors = editar ? $liErrorsDescuentoModal : $liErrors;
 
@@ -57,6 +60,9 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     else if (!(/^[0-9]+$/.test($inputMontoMinimo.value)))
       errores.push({ tp: 5, error: 'El monto mínimo no es válido.', });
 
+    if (!$inputTipoDescuento.selectedIndex)
+      errores.push({ tp: 6, error: 'Debe seleccionar un tipo de descuento', });
+
   }
 
   const tpErrors = {};
@@ -76,11 +82,13 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     (2 in tpErrors) ? $inputPorcentaje.classList.add('error') : $inputPorcentaje.classList.remove('error');
     (4 in tpErrors) ? $inputDescripcion.classList.add('error') : $inputDescripcion.classList.remove('error');
     (5 in tpErrors) ? $inputMontoMinimo.classList.add('error') : $inputMontoMinimo.classList.remove('error');
+    (6 in tpErrors) ? $inputTipoDescuento.classList.add('error') : $inputTipoDescuento.classList.remove('error');
   } else {
     $inputNombre.classList.remove('error');
     $inputPorcentaje.classList.remove('error');
     $inputDescripcion.classList.remove('error');
     $inputMontoMinimo.classList.remove('error');
+    $inputTipoDescuento.classList.remove('error');
   }
 
   return errores.length;
@@ -131,7 +139,7 @@ const cargarDescuentos = async () => {
           title: 'Porcentaje',
           data: 'percentage',
           render: function (data, type, row) {
-            const porcentaje = `${data}%`;
+            const porcentaje = `${parseInt(data)}%`;
             if (type === 'display') {
               return porcentaje
             }
@@ -148,6 +156,30 @@ const cargarDescuentos = async () => {
               return montoMinino
             }
             return montoMinino;
+          }
+        },
+        {
+          title: 'Tipo Descuento',
+          data: 'type',
+          render: function (data, type, row) {
+            let txt;
+            switch (data) {
+              case '1':
+                txt = 'Producto';
+                break;
+
+              case '2':
+                txt = 'Zona';
+                break;
+
+              case '3':
+                txt = 'Monto';
+                break;
+            }
+            if (type === 'display') {
+              return txt
+            }
+            return txt;
           }
         },
         {
@@ -184,6 +216,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $porcentaje = d.getElementById('percentaje');
   $descripcion = d.getElementById('description');
   $montoMinimo = d.getElementById('min-amount');
+  $tipoDescuento = d.getElementById('type');
   $liErrors = d.getElementById('errors');
 
 
@@ -193,6 +226,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $descripcionDescuentoModal = d.querySelector('#editDiscountsModal #description');
   $montoMinimoDescuentoModal = d.querySelector('#editDiscountsModal #min-amount');
   $idDescuentoModal = d.querySelector('#editDiscountsModal #id-discount-modal');
+  $tipoDescuentoModal = d.querySelector('#editDiscountsModal #type');
   $liErrorsDescuentoModal = d.querySelector('#editDiscountsModal #errors');
 
 
@@ -233,6 +267,7 @@ d.addEventListener('submit', async e => {
       percentage: parseFloat($porcentaje.value),
       description: $descripcion.value,
       minimum_amount: parseInt($montoMinimo.value),
+      type: $tipoDescuento[$tipoDescuento.selectedIndex].value,
     });
 
     if (response) {
@@ -272,8 +307,14 @@ d.addEventListener('click', async e => {
       $descripcionDescuentoModal.value = response.data.description;
       $montoMinimoDescuentoModal.value = parseInt(response.data.minimum_amount);
 
-      $idDescuentoModal.value = idDescuento;
+      $tipoDescuentoModal.querySelectorAll('option').forEach(op => {
+        if (op.value === response.data.type)
+          op.setAttribute('selected', 'true');
+        else
+          op.removeAttribute('selected');
+      });
 
+      $idDescuentoModal.value = idDescuento;
     }
   }
 
@@ -297,6 +338,7 @@ d.addEventListener('click', async e => {
         percentage: parseFloat($porcentajeDescuentoModal.value),
         description: $descripcionDescuentoModal.value,
         minimum_amount: parseInt($montoMinimoDescuentoModal.value),
+        type: $tipoDescuentoModal[$tipoDescuentoModal.selectedIndex].value,
       }
     );
 
