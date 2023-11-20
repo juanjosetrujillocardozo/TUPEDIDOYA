@@ -87,6 +87,7 @@
               <a href="comisiones.html" class="dropdown-item">Comisiones</a>
               <a href="descuentos.html" class="dropdown-item">Descuentos</a>
               <a href="metodos-pago.html" class="dropdown-item">Métodos de Pago</a>
+              <a href="remisiones.html" class="dropdown-item">Remisiones</a>
             </div>
           </div>
           <!-- ACERCA DE NOSOTROS -->
@@ -110,7 +111,7 @@
           </a>
           <a class="btn-sm-square bg-white rounded-circle ms-3" data-bs-toggle="modal"
             data-bs-target="#shoppingCartModal">
-            <small class="fa fa-shopping-bag text-body"></small>
+            <small class="fa fa-shopping-bag text-body btn-shopping-cart"></small>
           </a>
         </div>
       </div>
@@ -496,24 +497,41 @@
       <div class="modal-content">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="shoppingCartModalLabel">Carrito de Compras</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close d-none" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <form id="form-edit-comisions">
             <div class="row g-3">
-              <!-- NOMBRE -->
-              <!-- <div class="col-12">
+              <!-- CLIENTE -->
+              <div class="col-12">
                 <div class="form-floating">
-                  <input type="text" class="form-control" id="name" placeholder="">
-                  <label for="name">Nombre</label>
+                  <select id="customer" class="form-control"></select>
+                  <label for="customer">Cliente</label>
                 </div>
-              </div> -->
+              </div>
+              <!-- NOTIFICACION -->
+              <div class="col-12">
+                <ul id="errors">
+                </ul>
+              </div>
+              <!-- DETAIL -->
+              <div class="col-12">
+                <table class="container">
+                  <thead>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Total</th>
+                  </thead>
+                  <tbody>
+
+                  </tbody>
+                </table>
+
+
+              </div>
             </div>
           </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="button" id="btn-guardar-cambios" class="btn btn-primary">Guardar Cambios</button>
         </div>
       </div>
     </div>
@@ -557,21 +575,21 @@
           <br>
           <span class="text-body label-stock"></span>
         </div>
-        <!-- <div class="d-flex border-top">
-          <small class="text-center py-2" style="width: 65%;">
+        <div class="d-flex border-top">
+          <!-- <small class="text-center py-2 w-100">
             <a class="text-body add-cart"><i class="fa fa-shopping-bag text-primary me-2"></i>Añadir al
               carrito</a>
-          </small>
-          <div class="text-center py-2 d-flex justify-content-center" style="width: 35%;">
-            <a class="btn-sm-square bg-white rounded-circle ms-3" href="">
+          </small> -->
+          <div class="text-center py-2 d-flex justify-content-center align-items-center w-100 controls-card">
+            <a class="btn-sm-square bg-white rounded-circle ms-3 add-cart" style="justify-content: normal;">
               <small class="fa fa-plus text-body"></small>
             </a>
-            <div class="cantidad mx-2">10</div>
-            <a class="btn-sm-square bg-white rounded-circle ms-3" href="">
+            <div class="cantidad mx-2">0</div>
+            <a class="btn-sm-square bg-white rounded-circle ms-3 minus-cart" style="justify-content: normal;">
               <small class="fa fa-minus text-body"></small>
             </a>
           </div>
-        </div> -->
+        </div>
       </div>
     </div>
   </template>
