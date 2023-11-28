@@ -5,7 +5,7 @@ let $alertContainer;
 
 
 // DECLARACIÓN DE FUNCIONES
-export const appendAlert = (message, type = 'success') => {
+export const appendAlert = (message, type = 'success', duration = 7000) => {
   $alertContainer.classList.remove('hide-alert');
   $alertContainer.innerHTML = '';
 
@@ -20,7 +20,7 @@ export const appendAlert = (message, type = 'success') => {
   $alertContainer.append(wrapper);
   setTimeout(() => {
     $alertContainer.classList.add('hide-alert');
-  }, 7000);
+  }, duration);
 }
 
 // DELEGACIÓN DE EVENTOS

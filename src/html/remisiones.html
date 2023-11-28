@@ -119,61 +119,42 @@
   <!-- NAVBAR FIN -->
 
   <!-- Contact Start -->
-  <div class="container-xxl py-6">
+  <div class="container-xxl pt-5">
     <div class="container">
       <div class="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
         <h1 class="display-5 mb-3">Remisiones</h1>
-        <p>Crea y administra las remisiones asociadas a los pedidos de tus clientes y colaboradores</p>
+        <p>Consulta y administra las remisiones asociadas a los pedidos de tus clientes y colaboradores</p>
       </div>
       <div class="row g-5 justify-content-center">
 
         <div class="col-lg-7 col-md-12 wow fadeInUp" data-wow-delay="0.5s">
-          <form id="form-type-documents">
-            <div class="row g-3">
-              <!-- MÉTODO DE PAGO -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="metodo-pago" class="form-control"></select>
-                  <label for="tp-documento">Método de Pago</label>
-                </div>
-              </div>
-              <!-- ZONA -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="zona" class="form-control"></select>
-                  <label for="tp-documento">Zona</label>
-                </div>
-              </div>
-              <!-- DETALLE -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <textarea class="form-control" id="detalle-documento" placeholder="" cols="30" rows="10"></textarea>
-                  <label for="detalle-documento">Detalle</label>
-                </div>
-              </div>
-              <!-- LI DE ERRORES -->
-              <div class="col-12">
-                <ul id="errors">
-                </ul>
-              </div>
-              <div class="col-12 text-center">
-                <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Crear Producto</button>
-              </div>
-            </div>
-          </form>
         </div>
       </div>
     </div>
   </div>
   <!-- Contact End -->
 
+  <div class="div text-center mb-5">
+    <a class="btn btn-primary" id="generar-reporte">Generar Reporte de Remisiones</a>
+  </div>
+
+
   <!-- Data Table Start -->
   <div class="container table-container">
-    <table id="type-documents" class="display" style="width:100%">
+    <table id="remisiones" class="display" style="width:100%">
       <thead>
         <tr>
-          <th>Tipo Documento</th>
-          <th>Detalle</th>
+          <th>Consecutivo</th>
+          <th>Fecha Elaboración</th>
+          <th>Valor</th>
+          <th>Estado</th>
+          <th>Descuento Zona</th>
+          <th>Descuento Monto</th>
+          <th>Descuento Productos</th>
+          <th>Comision Zona</th>
+          <th>Comisión Monto</th>
+          <th>Comisión Productos</th>
+          <th>Comisión General</th>
           <th></th>
         </tr>
       </thead>

@@ -428,6 +428,10 @@
   overflow-x: auto;
 }
 
+.navbar-nav * {
+  color: var(--dark) !important;
+}
+
 /* MEDIA QUERYS */
 
 @media screen and (min-width: 425px) and (max-width: 629px) {

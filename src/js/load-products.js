@@ -1,10 +1,12 @@
 import { API_URL } from './../constants/constants.js';
-import { fetchRequest, } from './modules/index.js';
+import { fetchRequest, validarPermiso, appendAlert } from './modules/index.js';
 
+validarPermiso();
 // DECLARIÓN DE VARIABLES
 const d = document;
 
-let $productList,
+let perfil,
+  $productList,
   $productCardTemplate,
   $tabProductsTemplate,
   $tabButtonTemplate,
@@ -19,6 +21,11 @@ let $productList,
   // esta variable almacena el primer producto que se agrega cuando el carrito de compras no tiene un cliente asignado
   idProductoSinCliente = null,
   agregarPrimerProducto = false,
+  $continueShoppingContainer,
+  $finishShoppingContainer,
+  $finishShopping,
+  $paymentMethod,
+  $zone,
   $liErrors;
 
 // DECLARACIÓN DE FUNCIONES
@@ -86,10 +93,11 @@ const construirTarjetasProductos = async (productos, vendedor = false) => {
       $price.textContent = `$${price.toLocaleString("en")}`;
 
 
-
-      const productShoppingCart = await buscarProductoEnCarrito(product.id);
-      if (productShoppingCart)
-        $cardProduct.querySelector('.cantidad').textContent = productShoppingCart.data.count;
+      if (perfil) {
+        const productShoppingCart = await buscarProductoEnCarrito(product.id);
+        if (productShoppingCart)
+          $cardProduct.querySelector('.cantidad').textContent = productShoppingCart.data.count;
+      }
 
       $cardProduct.querySelector('.controls-card').setAttribute('data-id-product', product.id);
 
@@ -137,9 +145,16 @@ const obtenerClientes = async (editar = false, idCliente = null) => {
       console.log('Ha ocurrido un error al obtener los clientes ');
   };
 
-  let response = await fetchRequest(null, errorCatchClientes, `${API_URL}/user/all`);
-  console.log(response);
-  response.data = response.data.filter(g => g.status);
+  const onErrorResponse = (res, response) => {
+    console.log(response);
+    if (res.status == 400) {
+      console.log(response.message);
+    }
+  };
+
+  let response = await fetchRequest(onErrorResponse, errorCatchClientes, `${API_URL}/user/all`);
+  response.data = response.data.filter(g => g.status && g.role.name === 'CLI');
+  console.log(response.data);
 
   if (!response || !response.data.length) {
     $selectClientes.innerHTML = `<option>No hay clientes</option>`;
@@ -150,7 +165,7 @@ const obtenerClientes = async (editar = false, idCliente = null) => {
       const $option = d.createElement('option');
       $option.textContent = cliente.names + ' ' + cliente.surnames;
       $option.setAttribute('value', cliente.id);
-      if (editar && cliente.id === idGrupo)
+      if (editar && cliente.id == idCliente)
         $option.setAttribute('selected', 'true');
       $fragment.appendChild($option);
     }
@@ -178,8 +193,6 @@ const buscarProductoEnCarrito = async (idProduct) => {
 };
 
 const addProductCart = async (inforProduct) => {
-
-
   const product = await buscarProductoEnCarrito(inforProduct.id);
 
   // si el producto no existe lo agregamos
@@ -199,11 +212,15 @@ const addProductCart = async (inforProduct) => {
       }
     };
 
-    await fetchRequest(onErrorResponse, errorCatchAddItem, `${API_URL}/shopping-cart/add-shopping-cart`, 'POST', {
+    const res = await fetchRequest(onErrorResponse, errorCatchAddItem, `${API_URL}/shopping-cart/add-shopping-cart`, 'POST', {
       product: parseInt(inforProduct.id),
       count: 1,
       customer: parseInt(idCliente),
     });
+
+    if (res)
+      inforProduct.cantidad.textContent = 1;
+
   } else {
 
     // const product = await buscarProductoEnCarrito(inforProduct.id);
@@ -290,14 +307,16 @@ const modificarCarrito = async (elem, agregar = true) => {
   };
 
   let productos = await fetchRequest(null, errorCatchCarritoCompras, `${API_URL}/shopping-cart/all`);
-  console.log(productos);
   if (!productos.data.length) {
     // ABRIMOS EL CARRITO DE COMPRAS PARA QUE EL VENDEDOR SELECCIONE EL CLIENTE
-    await obtenerClientes();
-    $modalShoppingCart.show();
-    $liErrors.innerHTML = `<li>Seleccione un cliente</li>`
-
-    idProductoSinCliente = obtenerInfoProducto(elem);
+    await obtenerClientes(true, idCliente || null);
+    if (idCliente && agregar) {
+      addProductCart(obtenerInfoProducto(elem));
+    } else if (!idCliente) {
+      $modalShoppingCart.show();
+      $liErrors.innerHTML = `<li>Seleccione un cliente</li>`
+      idProductoSinCliente = obtenerInfoProducto(elem);
+    }
   } else {
     if (!idCliente) {
       idCliente = productos.data[0].user_id.id;
@@ -309,36 +328,160 @@ const modificarCarrito = async (elem, agregar = true) => {
       removeProductCart(obtenerInfoProducto(elem))
   }
 };
-const construirCarrito = async (idProducto) => {
-  const $tr = d.createElement('tr');
 
-  const errorCatchClientes = (e) => {
+const construirCarrito = async () => {
+  const errorCatchCarritoCompras = (e) => {
     console.log(e);
     if (e instanceof TypeError)
-      console.log('Ha ocurrido un error al obtener el producto ');
+      console.log('Ha ocurrido un error al consultar el carrito de compras');
   };
 
-  const dataProduct = await fetchRequest(null, errorCatchClientes, `${API_URL}/product/find/${idProducto}`);
+  let productos = await fetchRequest(null, errorCatchCarritoCompras, `${API_URL}/shopping-cart/all`);
+  d.querySelector('.btn-close').classList.remove('d-none');
 
-  console.log(dataProduct);
+  if (productos && productos.data.length) {
 
-  const datos = [dataProduct.data.name, 1, dataProduct.data.price, dataProduct.data.price];
+    // AGREGAMOS EL BOTON DE COMPRA
+    $continueShoppingContainer.classList.remove('d-none');
 
-  for (const data of datos) {
-    const $td = d.createElement('td');
-    $td.textContent = data;
-    $tr.appendChild($td)
+    if (localStorage.getItem('ROLE-USER') !== 'CLI') {
+      await obtenerClientes(true, productos.data[0].user_id.id);
+    } else {
+      // si el usuario es un cliente no necesita el select de cliente
+      const $customerFields = d.querySelectorAll('.customer-fields');
+      $customerFields.forEach(cf => {
+        d.getElementById('modal-fields').removeChild(cf);
+      });
+    }
+    let total = 0;
+    for (const data of productos.data) {
+      const $tr = d.createElement('tr');
+
+      const $tdProducto = d.createElement('td');
+      const $tdCantidad = d.createElement('td');
+      const $tdPrecioUnitario = d.createElement('td');
+      const $tdTotal = d.createElement('td');
+
+      $tdProducto.textContent = data.product_id.name;
+      $tdCantidad.textContent = data.count;
+      $tdPrecioUnitario.textContent = `$${parseInt(data.product_id.price).toLocaleString("en")
+        }`
+      const subtotal = parseInt(data.product_id.price * data.count);
+      $tdTotal.textContent = `$${subtotal.toLocaleString("en")}`;
+
+      $tr.appendChild($tdProducto);
+      $tr.appendChild($tdCantidad);
+      $tr.appendChild($tdPrecioUnitario);
+      $tr.appendChild($tdTotal);
+      $tbodyShoppingCart.appendChild($tr);
+      total += subtotal;
+    }
+
+    const $tr = d.createElement('tr');
+    for (const val of ['', '', 'Total', `$${total.toLocaleString("en")}`]) {
+      const $td = d.createElement("td");
+      $td.textContent = val;
+      $td.style.fontWeight = 'bold';
+      $tr.appendChild($td);
+    }
+
+    $tbodyShoppingCart.appendChild($tr);
+
   }
-
-
-  console.log($tbodyShoppingCart);
-  $tbodyShoppingCart.appendChild($tr);
-
 
 };
 
+const obtenerZonas = async () => {
+  const errorCatchZonas = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener las zonas');
+  };
+
+  let response = await fetchRequest(null, errorCatchZonas, `${API_URL}/zone/all`);
+  console.log(response);
+
+  if (!response || !response.data.length) {
+    $zone.innerHTML = `<option>No hay zonas</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $zone.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const zona of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = zona.name;
+      $option.setAttribute('value', zona.id);
+      $fragment.appendChild($option);
+    }
+    $zone.appendChild($fragment);
+
+  }
+};
+
+const obtenerMetodosPago = async () => {
+  const errorCatchMetodosPago = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener los métodos de pago');
+  };
+
+  let response = await fetchRequest(null, errorCatchMetodosPago, `${API_URL}/payment-method/all`);
+  console.log(response);
+  response.data = response.data.filter(g => g.status);
+
+  if (!response || !response.data.length) {
+    $paymentMethod.innerHTML = `<option>No hay métodos de pago</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $paymentMethod.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const metodoPago of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = metodoPago.name;
+      $option.setAttribute('value', metodoPago.id);
+      $fragment.appendChild($option);
+    }
+    $paymentMethod.appendChild($fragment);
+
+  }
+};
+
+const validarErrores = function (serverError = null, limpiar = false) {
+  const errores = (serverError) ? serverError : [];
+
+  if (!limpiar) {
+
+    if (!$zone.selectedIndex)
+      errores.push({ tp: 1, error: 'Debe seleccionar una zona.', });
+
+    if (!$paymentMethod.selectedIndex)
+      errores.push({ tp: 2, error: 'Debe seleccionar un método de pago.', });
+
+  }
+
+  const tpErrors = {};
+  $liErrors.innerHTML = '';
+  if (errores.length) {
+    const $fragment = d.createDocumentFragment();
+    errores.forEach(e => {
+      tpErrors[e.tp] = true;
+      const $li = d.createElement("li");
+      $li.textContent = e.error;
+      $fragment.appendChild($li);
+    });
+
+    $liErrors.appendChild($fragment);
+    (1 in tpErrors) ? $zone.classList.add('error') : $zone.classList.remove('error');
+    (2 in tpErrors) ? $paymentMethod.classList.add('error') : $paymentMethod.classList.remove('error');
+  } else {
+    $zone.classList.remove('error');
+    $paymentMethod.classList.remove('error');
+  }
+
+  return errores.length;
+}
+
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
+  console.log('carga el dom');
   $productCardTemplate = d.getElementById('card-product-template').content,
     $tabProductsTemplate = d.getElementById('tab-products-template').content,
     $tabButtonTemplate = d.getElementById('tab-button-template').content,
@@ -350,6 +493,15 @@ d.addEventListener('DOMContentLoaded', async e => {
       backdrop: 'static',
     });
 
+  $continueShoppingContainer = d.getElementById('continue-shopping-container');
+  $finishShoppingContainer = d.getElementById('finish-shopping-container');
+  $paymentMethod = d.getElementById('payment-method');
+  $zone = d.getElementById('zone');
+
+  await obtenerZonas();
+  await obtenerMetodosPago();
+
+
   const errorCatchProductos = (e) => {
     console.log(e);
     if (e instanceof TypeError)
@@ -359,23 +511,22 @@ d.addEventListener('DOMContentLoaded', async e => {
   let productos = await fetchRequest(null, errorCatchProductos, `${API_URL}/product/all`);
   console.log(productos);
 
-  // OBTENEMOS EL ROL DEL USUARIO
-  const errorCatchPerfilUsuario = (e) => {
-    console.log(e);
-    if (e instanceof TypeError)
-      console.log('Ha ocurrido un error al obtener los datos del perfil del usuario');
-  };
-
-  let resPerfil = await fetchRequest(null, errorCatchPerfilUsuario, `${API_URL}/user/profile`, 'GET', null, false);
-
-  console.log(resPerfil);
-
+  perfil = localStorage.getItem('ROLE-USER');
   // SI EL USUARIO NO ESTÁ AUTENTICADO O NO ES UN VENDEDOR, SE ASUME QUE ES UN CLIENTE
-  if (!resPerfil || resPerfil.data.role.name !== 'VEN') {
+  if (!perfil || perfil !== 'VEN') {
     construirTarjetasProductos(productos.data);
   } else {
     construirTarjetasProductos(productos.data, true);
   }
+
+  d.getElementById('shoppingCartModal').addEventListener('hidden.bs.modal', event => {
+    $tbodyShoppingCart.innerHTML = '';
+    d.getElementById('cart-payment-method').classList.add('d-none');
+    d.getElementById('cart-zone').classList.add('d-none');
+    $finishShoppingContainer.classList.add('d-none');
+
+    validarErrores(null, true);
+  })
 
 });
 
@@ -388,21 +539,77 @@ d.addEventListener('click', async e => {
   if (e.target.matches('.minus-cart, .minus-cart *')) {
     modificarCarrito(e.target, false);
   }
-  console.log(e.target);
-  if (e.target.matches('.btn-shopping-cart')) {
+  if (e.target.matches('.btn-shopping-cart, .btn-shopping-cart *')) {
     construirCarrito();
+  }
+
+  console.log(e.target);
+  if (e.target.matches('#continue-shopping')) {
+    d.getElementById('cart-payment-method').classList.remove('d-none');
+    d.getElementById('cart-zone').classList.remove('d-none');
+    $finishShoppingContainer.classList.remove('d-none');
+    $continueShoppingContainer.classList.add('d-none');
+  }
+
+  if (e.target.matches('#finish-shopping')) {
+    const errors = validarErrores();
+
+    if (!errors) {
+
+      const errorCatchCrearRemision = (e) => {
+        console.log(e);
+        if (e instanceof TypeError)
+          console.log('Ha ocurrido un error al crear la remisión');
+      };
+
+      const remision = await fetchRequest(null, errorCatchCrearRemision, `${API_URL}/referral/create-referral`, 'POST', {
+        payment_method: parseInt($paymentMethod[$paymentMethod.selectedIndex].value),
+        zone: parseInt($zone[$zone.selectedIndex].value),
+        description: "prueba de remison"
+      });
+
+      console.log();
+      if (remision) {
+        appendAlert(`Pedido Realizado Correctamente. El consecutivo de tu orden es: ${remision.data.referralSave.consecutive}`, 'success', 90000);
+        $modalShoppingCart.hide();
+        d.getElementById('form-shopping-cart').reset();
+      }
+
+    }
   }
 
 });
 
 d.addEventListener('change', async e => {
   if (e.target.matches('#customer')) {
-    if (!idCliente) {
+
+    // VALIDAMOS SI EL CARRITO ESTÁ VACÍO
+    const errorCatchCarritoCompras = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.log('Ha ocurrido un error al consultar el carrito de compras');
+    };
+
+    let productos = await fetchRequest(null, errorCatchCarritoCompras, `${API_URL}/shopping-cart/all`);
+
+    // si cambia el cliente actualizamos todos los registros del carrito de compras, si ya tenía un cliente asignado
+
+    if (productos.data.length) {
+      const errorCatchActualizarCliente = (e) => {
+        console.log(e);
+        if (e instanceof TypeError)
+          console.log('Ha ocurrido un error al actualizar el cliente del carrito de compras');
+      };
+
+      let productos = await fetchRequest(null, errorCatchActualizarCliente, `${API_URL}/shopping-cart/update-customer-cart`, 'PATCH', { customer: parseInt(e.target[e.target.selectedIndex].value) });
+    }
+
+    if (!idCliente && !productos.data.length) {
       idCliente = e.target[e.target.selectedIndex].value;
       if (agregarPrimerProducto)
         await addProductCart(idProductoSinCliente);
       $liErrors.innerHTML = '';
-      d.querySelector('.btn-close').classList.remove('d-none');
+      construirCarrito();
     } else {
       idCliente = e.target[e.target.selectedIndex].value;
     }

@@ -1,5 +1,7 @@
 import { API_URL } from './../constants/constants.js';
-import { appendAlert, fetchRequest, showDeleteConfirmationAlert } from './modules/index.js';
+import { appendAlert, fetchRequest, showDeleteConfirmationAlert, validarPermiso } from './modules/index.js';
+
+validarPermiso();
 
 const d = document;
 
@@ -62,16 +64,16 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   return errores.length;
 }
 
-const cargarTiposDocumento = async () => {
+const cargarRemisiones = async () => {
   try {
 
-    const errorCatchProductos = (e) => {
+    const errorCatchRemisiones = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.log('Ha ocurrido un error al obtener los tipos de documento');
+        console.log('Ha ocurrido un error al crear las remisiones');
     };
 
-    let response = await fetchRequest(null, errorCatchProductos, `${API_URL}/type-document/all`);
+    let response = await fetchRequest(null, errorCatchRemisiones, `${API_URL}/referral/all`);
 
     console.log(response);
     if (!response) response = { data: [] };
@@ -79,7 +81,7 @@ const cargarTiposDocumento = async () => {
     if (dataTable !== undefined)
       dataTable.destroy();
 
-    dataTable = $('#type-documents').DataTable({
+    dataTable = $('#remisiones').DataTable({
       language: {
         "decimal": "",
         "emptyTable": "No hay información",
@@ -103,41 +105,141 @@ const cargarTiposDocumento = async () => {
       data: response.data,
       "columns": [
         {
-          data: 'name',
-          title: 'Nombre',
+          data: 'data',
+          title: 'Consecutivo',
           render: function (data, type, row) {
             if (type === 'display') {
-              return data;
+              return data.consecutive;
             }
-            return data;
+            return data.consecutive;
           },
         },
         {
-          data: 'description',
-          title: 'Descripción',
+          data: 'data',
+          title: 'Fecha',
           render: function (data, type, row) {
             if (type === 'display') {
-              return data;
+              return data.date_of_elaboration;
             }
-            return data;
+            return data.date_of_elaboration;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data.payment_method_value;
+            }
+            return data.payment_method_value;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            let txt = '';
+            if (type === 'display') {
+              switch (data.status) {
+                case '1':
+                  txt = 'Pendiente Pago';
+                  break;
+
+                case '2':
+                  txt = 'Pendiente Entrega';
+                  break;
+
+                case '3':
+                  txt = 'Entregado';
+                  break;
+
+                case '4':
+                  txt = 'Cancelado';
+                  break;
+
+              }
+              return txt;
+            }
+            return txt;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data.discount_zone_value;
+            }
+            return data.discount_zone_value;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data.discount_amount_value;
+            }
+            return data.discount_amount_value;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data.discount_products_value;
+            }
+            return data.discount_products_value;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data.commission_zone_value;
+            }
+            return data.commission_zone_value;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data.commission_amount_value;
+            }
+            return data.commission_amount_value;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data.commission_products_value;
+            }
+            return data.commission_products_value;
+          },
+        },
+        {
+          data: 'data',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data.commission_default_value;
+            }
+            return data.commission_default_value;
           },
         },
         {
           title: 'Acciones',
           orderable: false, // No permite ordenar esta columna
-          data: 'id',
+          data: 'data',
           render: function (data, type, row) {
             if (type === 'display') {
               return `
-                  <button type="button" id="btn-edit-product" data-id-tp-document="${data}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editTypeDocumenModal">
+                  <button type="button" id="btn-edit-product" data-id-tp-document="${data.id}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editTypeDocumenModal">
                     <i class="bi bi-pencil-fill"></i>
                   </button>
-                  <button type="button" id="btn-delete-product" data-id-tp-document="${data}" class="btn btn-secondary btn-sm">
+                  <button type="button" id="btn-delete-product" data-id-tp-document="${data.id}" class="btn btn-secondary btn-sm">
                     <i class="bi bi-trash-fill"></i>
                   </button>
                 `
             }
-            return data;
+            return data.id;
           }
         }
       ],
@@ -160,7 +262,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   // INPUTS DE LA MODAL
   $metodoPagoModal = d.querySelector('#editTypeDocumenModal #tp-documento');
   $detalleModal = d.querySelector('#editTypeDocumenModal #detalle-documento');
-  $idTpDocumentModal = d.querySelector('#editTypeDocumenModal #id-type-document');
+  // $idTpDocumentModal = d.querySelector('#editTypeDocumenModal #id-type-document');
   $liErrorsModal = d.querySelector('#editTypeDocumenModal #errors');
 
 
@@ -172,7 +274,7 @@ d.addEventListener('DOMContentLoaded', async e => {
     validarErrores(null, true, true);
   });
 
-  cargarTiposDocumento();
+  cargarRemisiones();
 }); //ok
 
 d.addEventListener('submit', async e => {
@@ -203,7 +305,7 @@ d.addEventListener('submit', async e => {
 
     if (response) {
       e.target.reset();
-      cargarTiposDocumento();
+      cargarRemisiones();
       appendAlert('Tipo de documento creado correctamente');
     }
 
@@ -266,7 +368,7 @@ d.addEventListener('click', async e => {
     );
 
     if (response) {
-      cargarTiposDocumento();
+      cargarRemisiones();
       myModal.hide();
       appendAlert('Tipo de documento editado correctamente');
     }
@@ -296,7 +398,7 @@ d.addEventListener('click', async e => {
       const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/type-document/delete-type-document/${idTpDocument}`, 'DELETE');
 
       if (response) {
-        cargarTiposDocumento();
+        cargarRemisiones();
         deleteConfirmationAlert.fire(
           'Tipo de documento eliminado',
           'El tipo de documento ha sido eliminado satisfactoriamente.',
@@ -307,5 +409,17 @@ d.addEventListener('click', async e => {
       }
     };
     showDeleteConfirmationAlert('Eliminar Producto', 'Sí eliminas un producto, no podrás recuperarlo nuevamente.', confirmCallback);
+  }
+
+  if (e.target.matches('#generar-reporte')) {
+    const errorCatchReporte = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.log('Ha ocurrido un error al generar el reporte de remisiones');
+    };
+
+    let response = await fetchRequest(null, errorCatchReporte, `${API_URL}/referral/excel-referral/2023-11-27`, 'POST', null, true, true);
+
+    console.log(response);
   }
 });

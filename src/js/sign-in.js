@@ -80,6 +80,30 @@ d.addEventListener('click', async e => {
       if (res.ok) {
         const response = await res.json();
         localStorage.setItem('JWT', response.data.msg.access_token);
+        // OBTENEMOS EL ROL DEL USUARIO
+        // const errorCatchPerfilUsuario = (e) => {
+        //   console.log(e);
+        //   if (e instanceof TypeError)
+        //     console.log('Ha ocurrido un error al obtener los datos del perfil del usuario');
+        // };
+
+        const resPerfil = await fetch('http://localhost:3000/user/profile', {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json; charset=utf-8',
+            'content-type': 'application/json; charset=utf-8',
+            'authorization': `bearer ${localStorage.getItem('JWT')}`,
+          },
+        });
+
+        const dataPerfil = await resPerfil.json();
+
+        // let resPerfil = await fetchRequest(null, errorCatchPerfilUsuario, `${API_URL}/user/profile`, 'GET', null, false);
+
+        console.log(dataPerfil);
+        if (dataPerfil)
+          localStorage.setItem('ROLE-USER', dataPerfil.data.role.name);
+
         location.href = "http://127.0.0.1:5501/src/html/index.html";
       } else {
         if (res.status == 401) {
@@ -90,6 +114,7 @@ d.addEventListener('click', async e => {
         }
       }
     } catch (err) {
+      console.log(err);
       if (err instanceof TypeError)
         console.error('Ha ocurrido un error al realizar el login.');
     }

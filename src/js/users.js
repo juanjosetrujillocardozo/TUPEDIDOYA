@@ -1,6 +1,7 @@
 import { API_URL } from './../constants/constants.js';
-import { appendAlert, fetchRequest, showDeleteConfirmationAlert } from './modules/index.js';
+import { appendAlert, fetchRequest, showDeleteConfirmationAlert, validarPermiso } from './modules/index.js';
 
+validarPermiso();
 // DECLARACIÓN DE VARIABLES
 const d = document;
 let $name,
@@ -59,6 +60,8 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   const $inputRoles = (editar) ? $rolesUserModal : $roles;
   const $inputTypePerson = (editar) ? $typePersonUserModal : $typePerson;
   const $inputAddress = (editar) ? $addressUserModal : $address;
+  const $inputDepartamento = (editar) ? $departamentUserModal : $departament;
+  const $inputCiudad = (editar) ? $cityUserModal : $city;
 
   const $listErrors = (editar) ? $liErrorsUserModal : $liErrors;
 
@@ -140,11 +143,11 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     else if (!(/^[a-zA-Z0-9\s#.,'-áéíóúüñÁÉÍÓÚÜÑ]+$/.test($inputAddress.value)))
       errors.push({ tp: 14, error: 'La dirección introducida no es válida.', });
 
-    // if (!$departament.selectedIndex)
-    //   errors.push({ tp: 15, error: 'Debe seleccionar un departamento' });
+    if (!$inputDepartamento.selectedIndex)
+      errors.push({ tp: 15, error: 'Debe seleccionar un departamento' });
 
-    // if (!$city.selectedIndex)
-    //   errors.push({ tp: 16, error: 'Debe seleccionar una ciudad' });
+    if (!$inputCiudad.selectedIndex)
+      errors.push({ tp: 16, error: 'Debe seleccionar una ciudad' });
   }
 
   const tpErrors = {};
@@ -173,8 +176,8 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     (12 in tpErrors) ? $inputRoles.classList.add('error') : $inputRoles.classList.remove('error');
     (13 in tpErrors) ? $inputTypePerson.classList.add('error') : $inputTypePerson.classList.remove('error');
     (14 in tpErrors) ? $inputAddress.classList.add('error') : $inputAddress.classList.remove('error');
-    (15 in tpErrors) ? $departament.classList.add('error') : $departament.classList.remove('error');
-    (16 in tpErrors) ? $city.classList.add('error') : $city.classList.remove('error');
+    (15 in tpErrors) ? $inputDepartamento.classList.add('error') : $inputDepartamento.classList.remove('error');
+    (16 in tpErrors) ? $inputCiudad.classList.add('error') : $inputCiudad.classList.remove('error');
 
 
   } else {
@@ -191,8 +194,8 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     $inputRoles.classList.remove('error');
     $inputTypePerson.classList.remove('error');
     $inputAddress.classList.remove('error');
-    $departament.classList.remove('error');
-    $city.classList.remove('error');
+    $inputDepartamento.classList.remove('error');
+    $inputCiudad.classList.remove('error');
   }
 
   return errors.length;
@@ -277,8 +280,26 @@ const cargarUsuarios = async () => {
           },
         },
         { "data": 'address' },
-        { "data": 'departament_code' },
-        { "data": 'city_code' },
+        {
+          title: 'Departamento',
+          data: 'departament_code',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data
+            }
+            return data;
+          }
+        },
+        {
+          title: 'Ciudad',
+          data: 'city_code',
+          render: function (data, type, row) {
+            if (type === 'display') {
+              return data
+            }
+            return data;
+          }
+        },
         {
           data: 'status',
           title: 'Estado',
@@ -339,11 +360,73 @@ const obtenerTiposDocumento = async (editar = false, idGrupo = null) => {
       const $option = d.createElement('option');
       $option.textContent = tpDoc.name;
       $option.setAttribute('value', tpDoc.id);
-      if (editar && tpDoc.id === idGrupo)
+
+      console.log(tpDoc.id, idGrupo);
+      if (editar && tpDoc.id == idGrupo)
         $option.setAttribute('selected', 'true');
       $fragment.appendChild($option);
     }
     $selectTipoDocumento.appendChild($fragment);
+
+  }
+};
+
+const obtenerDepartamentos = async (editar = false, nombreDepartamento = null) => {
+  const errorCatchDepartamentos = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener los departamentos');
+  };
+
+  let response = await fetchRequest(null, errorCatchDepartamentos, `${API_URL}/locale/states-all`);
+  console.log(response);
+
+  const $selectDepartamentos = editar ? $departamentUserModal : $departament;
+
+  if (!response || !response.data.length) {
+    $selectDepartamentos.innerHTML = `<option>No hay departamentos</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $selectDepartamentos.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const departamento of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = departamento.state_name;
+      $option.setAttribute('value', departamento.state_name);
+      if (editar && departamento.state_name === nombreDepartamento)
+        $option.setAttribute('selected', 'true');
+      $fragment.appendChild($option);
+    }
+    $selectDepartamentos.appendChild($fragment);
+
+  }
+};
+
+const obtenerCiudades = async (nombreDepartamento, editar = false, nombreCiudad = null) => {
+  const errorCatchCiudades = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al obtener las ciudades');
+  };
+
+  let response = await fetchRequest(null, errorCatchCiudades, `${API_URL}/locale/citys-all/${nombreDepartamento}`);
+  console.log(response);
+
+  const $selectCiudades = editar ? $cityUserModal : $city;
+
+  if (!response || !response.data.length) {
+    $selectCiudades.innerHTML = `<option>No hay ciudades</option>`;
+  } else {
+    const $fragment = d.createDocumentFragment();
+    $selectCiudades.innerHTML = '<option disabled selected>Seleccione...</option>';
+    for (const ciudad of response.data) {
+      const $option = d.createElement('option');
+      $option.textContent = ciudad.city_name;
+      $option.setAttribute('value', ciudad.city_name);
+      if (editar && ciudad.city_name === nombreCiudad)
+        $option.setAttribute('selected', 'true');
+      $fragment.appendChild($option);
+    }
+    $selectCiudades.appendChild($fragment);
 
   }
 };
@@ -416,8 +499,9 @@ d.addEventListener('DOMContentLoaded', async e => {
   }
 
   obtenerTiposDocumento();
+  obtenerDepartamentos();
 
-  cargarUsuarios();
+  await cargarUsuarios();
 });
 
 d.addEventListener('submit', async e => {
@@ -453,8 +537,8 @@ d.addEventListener('submit', async e => {
       phone2: $phone2.value,
       typePerson: $typePerson[$typePerson.selectedIndex].value,
       address: $address.value,
-      departament_code: '1',
-      city_code: '1',
+      departament_code: $departament[$departament.selectedIndex].value,
+      city_code: $city[$city.selectedIndex].value,
       status: $status[$status.selectedIndex].value,
       is_dropshipping: true,
     });
@@ -518,10 +602,10 @@ d.addEventListener('click', async e => {
       $phone2UserModal.value = response.data.phone2;
       $addressUserModal.value = response.data.address;
 
-      $typeDocumentUserModal.querySelectorAll('option').forEach(op => {
-        if (op.value == response.data.typeDocument) op.setAttribute('selected', true);
-        else op.removeAttribute('selected');
-      });
+      obtenerTiposDocumento(true, response.data.type_document_id.id);
+      obtenerDepartamentos(true, response.data.departament_code);
+      obtenerCiudades(response.data.departament_code, true, response.data.city_code);
+
 
       const onErrorCatch = (e) => {
         console.log(e);
@@ -534,6 +618,11 @@ d.addEventListener('click', async e => {
       if (roles) {
 
         const $fragment = d.createDocumentFragment();
+        const $option = d.createElement('option');
+        $option.setAttribute('disabled', 'true');
+        $option.textContent = 'Seleccione...';
+        $fragment.appendChild($option);
+
         roles.data.forEach(elem => {
           const $option = d.createElement('option');
           $option.setAttribute('value', elem.id);
@@ -594,8 +683,8 @@ d.addEventListener('click', async e => {
         phone2: $phone2UserModal.value,
         typePerson: $typePersonUserModal[$typePersonUserModal.selectedIndex].value,
         address: $addressUserModal.value,
-        departament_code: '1',
-        city_code: '1',
+        departament_code: $departamentUserModal[$departamentUserModal.selectedIndex].value,
+        city_code: $cityUserModal[$cityUserModal.selectedIndex].value,
         status: ($statusUserModal[$statusUserModal.selectedIndex].value === 'true') ? true : false,
         is_dropshipping: false,
       }
@@ -643,5 +732,19 @@ d.addEventListener('click', async e => {
       }
     };
     showDeleteConfirmationAlert('Eliminar Usuario', 'Sí eliminas un usuario, no podrás recuperarlo nuevamente.', confirmCallback);
+  }
+});
+
+d.addEventListener('change', e => {
+
+  if (e.target === $departamentUserModal) {
+    obtenerCiudades(e.target[e.target.selectedIndex].value, true);
+    return;
+  }
+
+
+  if (e.target.matches('#departament')) {
+    obtenerCiudades(e.target[e.target.selectedIndex].value);
+    return;
   }
 });

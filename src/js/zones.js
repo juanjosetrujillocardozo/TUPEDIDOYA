@@ -1,5 +1,7 @@
 import { API_URL } from './../constants/constants.js';
-import { appendAlert, fetchRequest, showDeleteConfirmationAlert } from './modules/index.js';
+import { appendAlert, fetchRequest, showDeleteConfirmationAlert, validarPermiso } from './modules/index.js';
+
+validarPermiso();
 
 const d = document;
 

@@ -23,6 +23,7 @@ export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, me
         location.href = "http://127.0.0.1:5501/src/html/login.html";
       } else {
         console.log(res);
+        console.log(response);
         if (onErrorResponse) onErrorResponse(res, response);
       }
     }
