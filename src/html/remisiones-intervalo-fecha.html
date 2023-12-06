@@ -10,6 +10,7 @@
 
   <!-- Favicon -->
   <link href="img/favicon.ico" rel="icon">
+
   <!-- Google Web Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -118,77 +119,21 @@
   <!-- NAVBAR FIN -->
 
   <!-- Contact Start -->
-  <div class="container-xxl py-6">
+  <div class="container-xxl pt-6">
     <div class="container">
       <div class="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-        <h1 class="display-5 mb-3">Zonas</h1>
-        <p>Crea y administra las zonas que visitarán los colaboradores de tú empresa</p>
+        <h1 class="display-5 mb-3">Remisiones por intervalo de fecha</h1>
+        <p>Consulta todas las remisiones generadas en tú organización en un intervalo de tiempo específico</p>
       </div>
       <div class="row g-5 justify-content-center">
 
         <div class="col-lg-7 col-md-12 wow fadeInUp" data-wow-delay="0.5s">
-          <form id="form-zones">
-            <div class="row g-3">
-              <!-- NOMBRE -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <input type="text" class="form-control" id="name" placeholder="">
-                  <label for="name">Nombre</label>
-                </div>
-              </div>
-              <!-- DEPARTAMENTO -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="departament" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                  </select>
-                  <label for="departament">Departamento</label>
-                </div>
-              </div>
-              <!-- CIUDAD -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="city" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                  </select>
-                  <label for="city">Ciudad</label>
-                </div>
-              </div>
-              <!-- DESCRIPCIÓN -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <textarea id="description" class="form-control" cols="30" rows="10" placeholder=""></textarea>
-                  <label for="description">Descripción</label>
-                </div>
-              </div>
-              <!-- DESCUENTO -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="discount" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                  </select>
-                  <label for="discount">Descuento</label>
-                </div>
-              </div>
-              <!-- COMISIÓN -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="comission" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                  </select>
-                  <label for="comission">Comisión</label>
-                </div>
-              </div>
-              <!-- LI DE ERRORES -->
-              <div class="col-12">
-                <ul id="errors">
-                </ul>
-              </div>
-              <div class="col-12 text-center">
-                <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Crear Zona</button>
-              </div>
-            </div>
-          </form>
+          <div class="div text-center mb-5">
+            <button type="button" id="btn-fechas" class="btn btn-primary text-center mb-5" data-bs-toggle="modal"
+              data-bs-target="#reportesModal">
+              Seleccionar Rango de Fechas
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -196,16 +141,22 @@
   <!-- Contact End -->
 
   <!-- Data Table Start -->
-  <div class="container table-container">
-    <table id="zones" class="display" style="width:100%">
+  <div class="container table-container d-none">
+    <div class="div text-center mb-5">
+      <button type="button" id="btn-reporte" class="btn btn-secondary text-center mb-5">
+        Descargar Reporte
+      </button>
+    </div>
+    <table id="remisiones" class="display" style="width:100%">
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Departamento</th>
-          <th>Ciudad</th>
-          <th>Descripción</th>
-          <th>Descuento</th>
-          <th>Comisión</th>
+          <th>Consecutivo</th>
+          <th>Fecha Elaboración</th>
+          <th>Valor</th>
+          <th>Estado</th>
+          <th>Vendedor</th>
+          <th>Cliente</th>
+          <th>Zona</th>
           <th></th>
         </tr>
       </thead>
@@ -215,73 +166,38 @@
 
   <!-- Data Table End -->
 
-  <!-- Modal Editar COMISIÓN Start -->
-  <!-- Modal -->
-  <div class="modal fade" id="editZonesModal" tabindex="-1" aria-labelledby="editZonesModalLabel" aria-hidden="true">
+  <!-- Modal Reportes Start -->
+  <div class="modal fade" id="reportesModal" tabindex="-1" aria-labelledby="reportesModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="editZonesModalLabel">Editar Zona</h1>
+          <h1 class="modal-title fs-5" id="reportesModalLabel">Generar Reporte</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="form-edit-zones">
+          <form id="form-change-password">
             <div class="row g-3">
-              <!-- NOMBRE -->
-              <div class="col-12">
+              <!-- FECHA INICIAL -->
+              <div class="col-md-6">
                 <div class="form-floating">
-                  <input type="text" class="form-control" id="name" placeholder="">
-                  <label for="name">Nombre</label>
+                  <input type="date" class="form-control" id="init-date" placeholder="">
+                  <label for="init-date">Fecha Inicial</label>
                 </div>
               </div>
-              <!-- DEPARTAMENTO -->
-              <div class="col-12">
+
+              <!-- FECHA FINAL -->
+              <div class="col-md-6">
                 <div class="form-floating">
-                  <select id="departament" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                  </select>
-                  <label for="departament">Departamento</label>
+                  <input type="date" class="form-control" id="end-date" placeholder="">
+                  <label for="end-date">Fecha Final</label>
                 </div>
               </div>
-              <!-- CIUDAD -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="city" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                  </select>
-                  <label for="city">Ciudad</label>
-                </div>
-              </div>
-              <!-- DESCRIPCIÓN -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <textarea id="description" class="form-control" cols="30" rows="10" placeholder=""></textarea>
-                  <label for="description">Descripción</label>
-                </div>
-              </div>
-              <!-- DESCUENTO -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="discount" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                  </select>
-                  <label for="discount">Descuento</label>
-                </div>
-              </div>
-              <!-- COMISIÓN -->
-              <div class="col-12">
-                <div class="form-floating">
-                  <select id="comission" class="form-control">
-                    <option value="0" selected disabled>Seleccione...</option>
-                  </select>
-                  <label for="comission">Comisión</label>
-                </div>
-              </div>
-              <!-- ID ZONA -->
-              <input type="hidden" id="id-zones-modal">
+
+              <input type="hidden" id="id-user-change-password">
+
               <!-- LI DE ERRORES -->
               <div class="col-12">
-                <ul id="errors">
+                <ul id="errors" class="errors">
                 </ul>
               </div>
             </div>
@@ -289,12 +205,12 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="button" id="btn-guardar-cambios" class="btn btn-primary">Guardar Cambios</button>
+          <button type="button" id="btn-gen-report" class="btn btn-primary">Generar Reporte</button>
         </div>
       </div>
     </div>
   </div>
-  <!-- Modal Editar producto End -->
+  <!-- Modal Reportes End -->
 
 
 
@@ -379,7 +295,7 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Custom Javascript -->
-  <script src="./../js/zones.js" type="module"></script>
+  <script src="./../js/remisiones-intervalo-fecha.js" type="module"></script>
 </body>
 
 </html>

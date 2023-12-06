@@ -1,21 +1,57 @@
+// IMPORTACIÓN DE MÓDULOS
 import { API_URL } from './../constants/constants.js';
-import { appendAlert, fetchRequest, showDeleteConfirmationAlert, validarPermiso } from './modules/index.js';
+import { validarPermiso, fetchRequest, } from './modules/index.js';
 
 validarPermiso();
 
+// DECLARACIÓN DE VARIABLES
 const d = document;
 
-let $detalleRemision,
-  $detalleModal,
-  $liErrorsModal,
-  $idRemision,
-  $estadoRemision,
-  myModal,
+let $vendedores,
+  $errors,
   dataTable;
 
 // DECLARACIÓN DE FUNCIONES
+const validarErrores = function (serverError = null, editar = false, limpiar = false) {
 
-const cargarRemisiones = async () => {
+  const errors = (serverError) ? serverError : [];
+
+  if (!limpiar) {
+
+    if (!$vendedores.selectedIndex)
+      errors.push({ tp: 1, error: 'Debe seleccionar un vendedor' });
+
+  }
+
+  const tpErrors = {};
+  $errors.innerHTML = '';
+  if (errors.length) {
+    const $fragment = d.createDocumentFragment();
+    errors.forEach(e => {
+      tpErrors[e.tp] = true;
+      const $li = d.createElement("li");
+      $li.textContent = e.error;
+      $fragment.appendChild($li);
+    });
+
+    console.log(tpErrors);
+    $errors.appendChild($fragment);
+    (1 in tpErrors) ? $vendedores.classList.add('error') : $vendedores.classList.remove('error');
+
+  } else {
+    $vendedores.classList.remove('error');
+  }
+
+  if (errors.length)
+    d.getElementById('btn-reporte').setAttribute('disabled', 'true');
+  else
+    d.getElementById('btn-reporte').removeAttribute('disabled');
+
+  return errors.length;
+}
+
+
+const cargarRemisiones = async (data) => {
   try {
 
     const errorCatchRemisiones = (e) => {
@@ -53,7 +89,7 @@ const cargarRemisiones = async () => {
           "previous": "Anterior"
         }
       },
-      data: response.data,
+      data,
       "columns": [
         {
           data: 'data',
@@ -174,77 +210,96 @@ const cargarRemisiones = async () => {
     console.log(err);
   }
 
-}; //ok
-
-
+};
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
-  $idRemision = d.getElementById('id-remision');
-  $estadoRemision = d.getElementById('estado-remision');
+  $vendedores = d.getElementById('vendedores');
 
-  myModal = new bootstrap.Modal('#editStatusReferralModal', {
-    keyboard: false
-  });
+  const onErrorCatch = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.error('Ha ocurrido un error al obtener los vendedores.');
+  };
 
-  cargarRemisiones();
-}); //ok
+  const onErrorResponse = (res, response) => {
+    console.log(response);
+    if (res.status == 400) {
+      validarErrores([{ error: response.message }]);
+    }
+  };
+
+  // se hace la petición por AJAX al backend
+
+
+  const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/user/all`);
+
+  const vendedores = response.data.filter(u => u.role.name === 'VEN');
+  console.log(vendedores);
+
+  const $fragment = d.createDocumentFragment();
+  const $option = d.createElement('option');
+  $option.textContent = `Seleccione...`;
+  $option.value = 0;
+  $fragment.appendChild($option);
+  for (const ven of vendedores) {
+    const $option = d.createElement('option');
+    $option.textContent = `${ven.names} ${ven.surnames}`;
+    $option.value = ven.id;
+    $fragment.appendChild($option);
+  }
+
+  $vendedores.appendChild($fragment);
+
+  $errors = d.getElementById('errors');
+
+});
 
 d.addEventListener('click', async e => {
 
-  if (e.target.matches('#btn-edit-product, #btn-edit-product > *')) {
+  if (e.target.matches('#btn-vendedor')) {
 
-    const idReferral = (e.target.matches('#btn-edit-product'))
-      ? e.target.getAttribute('data-id-referral')
-      : e.target.parentElement.getAttribute('data-id-referral');
-
-    console.log(idReferral);
+    const errores = validarErrores();
+    if (errores > 0)
+      return;
 
     const onErrorCatch = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al obtener la remisión.');
+        console.error('Ha ocurrido un error al consultar las remisiones de este vendedor.');
     };
 
-    // se hace la petición por AJAX al backend
-    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/referral/find/${idReferral}`);
-
-    if (response) {
+    const onErrorResponse = (res, response) => {
       console.log(response);
-
-      $estadoRemision.querySelectorAll('option').forEach(op => {
-        if (response.data.referralExis.status === op.value)
-          op.selected = true;
-        else
-          op.removeAttribute('selected');
-      });
-
-      $idRemision.value = idReferral;
-
-    }
-  }
-
-  if (e.target.matches('#btn-guardar-cambios')) {
-
-    const onErrorCatch = (e) => {
-      console.log(e);
-      if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al editar el estado de la remisión.');
+      if (res.status == 400) {
+        validarErrores([{ error: response.message }]);
+      }
     };
-
 
     // se hace la petición por AJAX al backend
 
-    const response = await fetchRequest(
-      null, onErrorCatch, `${API_URL}/referral/update-status-referral/${$idRemision.value}`, 'PATCH',
-      {
-        status_referral: $estadoRemision[$estadoRemision.selectedIndex].value,
-      }
-    );
 
-    if (response) {
-      cargarRemisiones();
-      myModal.hide();
-      appendAlert('Estado de remisión editado correctamente');
-    }
+    console.log($vendedores[$vendedores.selectedIndex].value);
+    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/referral/reports-seller/${$vendedores[$vendedores.selectedIndex].value}`);
+
+
+    d.querySelector('.table-container').classList.remove('d-none');
+    cargarRemisiones(response.data);
+
   }
+
+  if (e.target.matches('#btn-reporte')) {
+    const errorCatchReporte = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.log('Ha ocurrido un error al generar el reporte de remisiones');
+    };
+
+    let response = await fetchRequest(null, errorCatchReporte, `${API_URL}/referral/excel-referral-download-seller/${$vendedores[$vendedores.selectedIndex].value}`, 'POST', null, true, true);
+
+    console.log(response);
+  }
+});
+
+d.addEventListener('change', async e => {
+ 
 });

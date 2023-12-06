@@ -1,4 +1,4 @@
-export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null, autenticacionRequerida = true) => {
+export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null, autenticacionRequerida = true, reporte = false) => {
 
   try {
     const dataRequest = {
@@ -14,7 +14,33 @@ export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, me
       dataRequest.body = JSON.stringify(body);
 
     const res = await fetch(URL, dataRequest);
-    const response = await res.json();
+
+    let response;
+
+    if (!reporte) {
+      response = await res.json();
+    } else {
+      // Extraer el tipo de contenido y crear un Blob
+      const contentType = res.headers.get('content-type');
+
+      const { blob, contentType2 } = await res.blob().then(blob => ({ blob, contentType }));
+
+      const url = window.URL.createObjectURL(blob);
+
+      // Crear un enlace (link) y simular un clic para descargar el archivo
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nombre_del_archivo.xlsx';
+      document.body.appendChild(a);
+      a.click();
+
+      // Liberar el objeto URL y remover el enlace creado
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+
+      return;
+    }
 
     if (res.ok) {
       return response;

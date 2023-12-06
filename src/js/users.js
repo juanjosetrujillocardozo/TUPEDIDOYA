@@ -20,13 +20,12 @@ let $name,
   $departament,
   $city,
   $status,
+  $isDropshipping,
   $nameUserModal,
   $surnameUserModal,
   $typeDocumentUserModal,
   $documentUserModal,
   $userUserModal,
-  $passwordUserModal,
-  $confirmPasswordUserModal,
   $emailUserModal,
   $phone1UserModal,
   $phone2UserModal,
@@ -36,11 +35,18 @@ let $name,
   $departamentUserModal,
   $cityUserModal,
   $statusUserModal,
+  $isDropshippingUserModal,
   $liErrors,
   $liErrorsUserModal,
   $idUserModal,
+  $passwordUserModal,
+  $confirmPasswordUserModal,
+  $changePassword,
+  $confirmPasswordModal,
+  idUserChangePassword,
   dataTable,
-  myModal;
+  myModal,
+  modalChangePassword;
 
 // DECLARACIÓN DE FUNCIONES
 const validarErrores = function (serverError = null, editar = false, limpiar = false) {
@@ -201,6 +207,68 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   return errors.length;
 }
 
+const validarErroresContrasena = (limpiar = false) => {
+
+  const errors = [];
+  // VALIDACIONES DE LA CONTRASEÑA
+
+  if (!limpiar) {
+
+    $changePassword.value = $changePassword.value.trim();
+    $confirmPasswordModal.value = $confirmPasswordModal.value.trim();
+
+    // VALIDAMOS QUE SE HAYA INGRESADO LA CONTRASEÑA
+    if (!$changePassword.value)
+      errors.push({ tp: 1, error: 'Falta la contraseña' });
+
+    // VALIDAMOS QUE LA CONTRASEÑA CONTENGA CARACTERES VÁLIDOS
+    if (!/^[a-zA-Z0-9ñÑ_-]+$/.test($changePassword.value))
+      errors.push({ tp: 1, error: 'Contraseña inválida. Sólo se aceptan letras, números, guiones medios y bajos' });
+
+    // VALIDAMOS LA LONGITUD DE LA CONTRASEÑA
+    if ($changePassword.value.length < 6 || $changePassword.value.length > 20)
+      errors.push({ tp: 1, error: 'Longitud de contraseña inválida. La contraseña debe tener como mínimo 6 caracteres y máximo 20' });
+
+    // VALIDACIONES DE LA CONFIRMACIÓN DE LA CONTRASEÑA
+
+    // VALIDAMOS QUE LA CONFIRMACIÓN DE LA CONTRASEÑA NO ESTÉ VACÍA
+    if (!$confirmPasswordModal.value)
+      errors.push({ tp: 2, error: 'Falta la confirmación de la contraseña' });
+
+    // VALIDAMOS QUE LA CONTRASEÑA Y LA CONFIRMACIÓN DE LA CONTRASEÑA SEAN IGUALES
+    if ($changePassword.value !== $confirmPasswordModal.value)
+      errors.push({ tp: 2, error: 'La contraseña y la confirmación de la contraseña no son iguales' });
+  } else {
+    $changePassword.value = '';
+    $confirmPasswordModal.value = '';
+  }
+
+  const tpErrors = {},
+    $liErrorsChangePassword = d.getElementById('errors-change-password');
+  $liErrorsChangePassword.innerHTML = '';
+  if (errors.length) {
+    const $fragment = d.createDocumentFragment();
+    errors.forEach(e => {
+      tpErrors[e.tp] = true;
+      const $li = d.createElement("li");
+      $li.textContent = e.error;
+      $fragment.appendChild($li);
+    });
+
+    console.log(tpErrors);
+    $liErrorsChangePassword.appendChild($fragment);
+    (1 in tpErrors) ? $changePassword.classList.add('error') : $changePassword.classList.remove('error');
+    (2 in tpErrors) ? $confirmPasswordModal.classList.add('error') : $confirmPasswordModal.classList.remove('error');
+
+
+  } else {
+    $changePassword.classList.remove('error');
+    $confirmPasswordModal.classList.remove('error');
+  }
+
+  return errors.length;
+};
+
 const cargarUsuarios = async () => {
   try {
 
@@ -301,13 +369,24 @@ const cargarUsuarios = async () => {
           }
         },
         {
+          data: 'is_dropshipping',
+          render: function (data, type, row) {
+            const txt = data ? 'Sí' : 'No';
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
+          },
+        },
+        {
           data: 'status',
           title: 'Estado',
           render: function (data, type, row) {
+            const txt = data ? 'Activo' : 'Inactivo';
             if (type === 'display') {
-              return data ? 'Activo' : 'Inactivo';
+              return txt;
             }
-            return data;
+            return txt;
           },
         },
 
@@ -323,6 +402,9 @@ const cargarUsuarios = async () => {
                   </button>
                   <button type="button" id="btn-delete-user" data-id-user="${data}" class="btn btn-secondary btn-sm">
                     <i class="bi bi-trash-fill"></i>
+                  </button>
+                  <button type="button" id="btn-change-ps" data-id-user="${data}" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="fa fa-key"></i>
                   </button>
                 `
             }
@@ -449,6 +531,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $departament = d.getElementById('departament');
   $city = d.getElementById('city');
   $status = d.getElementById('status');
+  $isDropshipping = d.getElementById('is-dropshipping');
   $nameUserModal = d.getElementById('name-user-modal');
   $surnameUserModal = d.getElementById('surnames-user-modal');
   $typeDocumentUserModal = d.getElementById('type-document-user-modal');
@@ -465,9 +548,13 @@ d.addEventListener('DOMContentLoaded', async e => {
   $departamentUserModal = d.getElementById('departament-user-modal');
   $cityUserModal = d.getElementById('city-user-modal');
   $statusUserModal = d.getElementById('status-user-modal');
+  $isDropshippingUserModal = d.getElementById('is-dropshipping-user-modal');
   $idUserModal = d.getElementById('id-user-modal');
   $liErrors = d.getElementById('errors');
   $liErrorsUserModal = d.getElementById('errors-user-modal');
+  $changePassword = d.getElementById('change-password');
+  $confirmPasswordModal = d.getElementById('confirm-password-modal');
+
 
   myModal = new bootstrap.Modal('#editUserModal', {
     keyboard: false
@@ -475,6 +562,14 @@ d.addEventListener('DOMContentLoaded', async e => {
 
   d.getElementById('editUserModal').addEventListener('hide.bs.modal', e => {
     validarErrores(null, true, true);
+  });
+
+  modalChangePassword = new bootstrap.Modal('#changePasswordModal', {
+    keyboard: false
+  });
+
+  d.getElementById('changePasswordModal').addEventListener('hide.bs.modal', e => {
+    validarErroresContrasena(true);
   });
 
   const onErrorCatch = (e) => {
@@ -560,7 +655,7 @@ d.addEventListener('submit', async e => {
       departament_code: '1',
       city_code: '1',
       status: ($status[$status.selectedIndex].value === 'true') ? true : false,
-      is_dropshipping: false,
+      is_dropshipping: $isDropshipping.checked,
     });
 
     if (response) {
@@ -642,9 +737,12 @@ d.addEventListener('click', async e => {
 
 
       $statusUserModal.querySelectorAll('option').forEach(op => {
-        if (op.value == response.data.status) op.setAttribute('selected', true);
+        if (op.value == response.data.status.toString()) op.setAttribute('selected', true);
         else op.removeAttribute('selected');
       });
+
+      $isDropshippingUserModal.checked = response.data.is_dropshipping;
+
       $idUserModal.value = idUser;
     }
   }
@@ -670,7 +768,7 @@ d.addEventListener('click', async e => {
     // se hace la petición por AJAX al backend
 
 
-    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/user/update-user/${$idUserModal.value}`, 'PATCH',
+    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/user/update-user/?id=${$idUserModal.value}`, 'PATCH',
       {
         names: $nameUserModal.value,
         surnames: $surnameUserModal.value,
@@ -686,7 +784,7 @@ d.addEventListener('click', async e => {
         departament_code: $departamentUserModal[$departamentUserModal.selectedIndex].value,
         city_code: $cityUserModal[$cityUserModal.selectedIndex].value,
         status: ($statusUserModal[$statusUserModal.selectedIndex].value === 'true') ? true : false,
-        is_dropshipping: false,
+        is_dropshipping: $isDropshippingUserModal.checked,
       }
     );
 
@@ -732,6 +830,47 @@ d.addEventListener('click', async e => {
       }
     };
     showDeleteConfirmationAlert('Eliminar Usuario', 'Sí eliminas un usuario, no podrás recuperarlo nuevamente.', confirmCallback);
+  }
+
+  if (e.target.matches('#btn-change-ps, #btn-change-ps *')) {
+    idUserChangePassword = (e.target.matches('#btn-change-ps'))
+      ? e.target.getAttribute('data-id-user')
+      : e.target.parentElement.getAttribute('data-id-user');
+  }
+
+  if (e.target.matches('#btn-change-password, #btn-change-password *')) {
+
+    const errors = validarErroresContrasena();
+
+    if (errors > 0)
+      return;
+
+    const onErrorResponse = (res, response) => {
+      console.log(response);
+      if (res.status == 400) {
+        validarErrores([{ error: response.message }], true);
+      }
+    };
+
+    const onErrorCatch = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.error('Ha ocurrido un error al actualizar la contraseña.');
+    };
+
+    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/user/reset-password/${idUserChangePassword}`, 'PATCH',
+      {
+        newpassword: $changePassword.value,
+      }
+    );
+
+
+    console.log(response);
+
+    if (response) {
+      appendAlert('Contraseña editada correctamente');
+      modalChangePassword.hide();
+    }
   }
 });
 

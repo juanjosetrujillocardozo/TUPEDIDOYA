@@ -33,19 +33,9 @@
 
   <!-- Data Tables -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-  <style>
-    * {
-      color: #5a5a5a;
-    }
-  </style>
 </head>
 
 <body>
-
-  <details>
-    <h4>Tarta de frutos rojos</h4>
-    <p>Frambuesas, arándanos y fresas encima de un relleno cremoso servido en una tarta crujiente.</p>
-  </details>
   <!-- Spinner Start -->
   <div id="spinner"
     class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -53,118 +43,50 @@
   </div>
   <!-- Spinner End -->
 
-  <!-- NAVBAR INICIO -->
-  <div class="container-fluid fixed-top px-0 wow fadeIn" data-wow-delay="0.1s">
-    <div class="top-bar row gx-0 align-items-center d-none d-lg-flex">
-      <div class="col-lg-6 px-5 text-start">
-        <small><i class="fa fa-map-marker-alt me-2"></i>Calle 18 Nº 9-11 Centro ,
-          Girardot, Colombia</small>
-        <small class="ms-4"><i class="fa fa-envelope me-2"></i>ventasdistriyasas@hotmail.com</small>
-      </div>
-      <div class="col-lg-6 px-5 text-end">
-        <small>Follow us:</small>
-        <a class="text-body ms-3" href=""><i class="fab fa-facebook-f"></i></a>
-        <a class="text-body ms-3" href=""><i class="fab fa-twitter"></i></a>
-        <a class="text-body ms-3" href=""><i class="fab fa-linkedin-in"></i></a>
-        <a class="text-body ms-3" href=""><i class="fab fa-instagram"></i></a>
-      </div>
-    </div>
 
-    <nav class="navbar navbar-expand-lg navbar-light py-lg-0 px-lg-5 wow fadeIn" data-wow-delay="0.1s">
-      <a href="index.html" class="navbar-brand ms-4 ms-lg-0">
-        <h1 class="fw-bold text-primary m-0">
-          Tu<span class="text-secondary"> Pedido</span> Ya
-        </h1>
-      </a>
-      <button type="button" class="navbar-toggler me-4" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarCollapse">
-        <div class="navbar-nav ms-auto p-4 p-lg-0">
-          <!-- SECCIONES -->
-          <!-- INICIO -->
-          <a href="index.html" class="nav-item nav-link active">Inicio</a>
-          <!-- USUARIOS -->
-          <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Usuarios</a>
-            <div class="dropdown-menu m-0">
-              <a href="tipos-documento.html" class="dropdown-item">Tipos de Documento</a>
-              <a href="grupos-inventario.html" class="dropdown-item">Grupos de Inventario</a>
-            </div>
-          </div>
-          <!-- ACERCA DE NOSOTROS -->
-          <a href="about.html" class="nav-item nav-link">Acerca de Nosotros</a>
-          <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Inventario</a>
-            <div class="dropdown-menu m-0">
-              <a href="productos.html" class="dropdown-item">Productos</a>
-              <a href="grupos-inventario.html" class="dropdown-item">Grupos de Inventario</a>
-            </div>
-          </div>
-          <div class="nav-item dropdown">
-            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
-            <div class="dropdown-menu m-0">
-              <a href="blog.html" class="dropdown-item">Blog</a>
-              <a href="feature.html" class="dropdown-item">Caracteristicas</a>
-              <a href="testimonial.html" class="dropdown-item">Testimonios</a>
-              <a href="404.html" class="dropdown-item">Pagina de error 404</a>
-            </div>
-          </div>
-          <a href="contact.html" class="nav-item nav-link">Contacto</a>
-        </div>
-        <div class="d-none d-lg-flex ms-2">
-          <a class="btn-sm-square bg-white rounded-circle ms-3" href="">
-            <small class="fa fa-search text-body"></small>
-          </a>
-          <a class="btn-sm-square bg-white rounded-circle ms-3" href="login.html">
-            <small class="fa fa-user text-body"></small>
-          </a>
-          <a class="btn-sm-square bg-white rounded-circle ms-3" href="">
-            <small class="fa fa-shopping-bag text-body"></small>
-          </a>
-        </div>
-      </div>
-    </nav>
+
+
+
+  <!-- Page Header Start -->
+  <!-- <div class="container-fluid page-header wow fadeIn" data-wow-delay="0.1s">
+    <div class="container">
+      <h1 class="display-3 mb-3 animated slideInDown">Crear Producto</h1>
+      <nav aria-label="breadcrumb animated slideInDown">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a class="text-body" href="#">Home</a></li>
+          <li class="breadcrumb-item"><a class="text-body" href="#">Pages</a></li>
+          <li class="breadcrumb-item text-dark active" aria-current="page">Contact Us</li>
+        </ol>
+      </nav>
+  </div> -->
   </div>
-  <!-- NAVBAR FIN -->
+  <!-- Page Header End -->
 
   <!-- Contact Start -->
-  <div class="container-xxl pt-5">
+  <div class="container-xxl py-6">
     <div class="container">
       <div class="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-        <h1 class="display-5 mb-3">Remisiones</h1>
-        <p>Consulta y administra las remisiones asociadas a los pedidos de tus clientes y colaboradores</p>
-      </div>
-      <div class="row g-5 justify-content-center">
-
-        <div class="col-lg-7 col-md-12 wow fadeInUp" data-wow-delay="0.5s">
-        </div>
+        <h1 class="display-5 mb-3">Pagos de comisiones</h1>
+        <p>Administra los pagos de las comisiones de los colaboradores de tú organización</p>
       </div>
     </div>
   </div>
   <!-- Contact End -->
 
-
-
-
-  <!-- <div class="div text-center mb-5">
-    <a class="btn btn-primary" id="generar-reporte">Generar Reporte de Remisiones</a>
-  </div> -->
-
-
   <!-- Data Table Start -->
   <div class="container table-container">
-    <table id="remisiones" class="display" style="width:100%">
+    <table id="pago-comisiones" class="display" style="width:100%">
       <thead>
         <tr>
-          <th>Consecutivo</th>
-          <th>Fecha Elaboración</th>
-          <th>Valor</th>
+          <th>Descripción</th>
+          <th>Valor a Pagar</th>
           <th>Estado</th>
-          <th>Vendedor</th>
-          <th>Cliente</th>
-          <th>Zona</th>
-          <th></th>
+          <th>Consecutivo Remisión</th>
+          <th>Comisión General</th>
+          <th>Comisión Zona</th>
+          <th>Comisión Venta</th>
+          <th>Comisión Productos</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -173,33 +95,40 @@
 
   <!-- Data Table End -->
 
-  <!-- Modal Editar Estado de Remisión Start -->
+  <!-- Modal Editar PRODUCTO Start -->
   <!-- Modal -->
-  <div class="modal fade" id="editStatusReferralModal" tabindex="-1" aria-labelledby="editStatusReferralModalLabel"
+  <div class="modal fade" id="editStatusPaymentComision" tabindex="-1" aria-labelledby="editStatusPaymentComisionLabel"
     aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="editStatusReferralModalLabel">Editar Estado de la Remisión</h1>
+          <h1 class="modal-title fs-5" id="editStatusPaymentComisionLabel">Editar Estado del Pago</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="form-edit-type-document">
+          <form id="form-edit-group">
             <div class="row g-3">
-              <!-- ESTADO REMISIÓN -->
-              <div class="col-12">
+              <!-- ESTADO -->
+              <div class="col-md-12">
                 <div class="form-floating">
-                  <select id="estado-remision" class="form-control">
-                    <option value="1">Pendiente Pago</option>
-                    <option value="2">Pendiente Entrega</option>
-                    <option value="3">Entregado</option>
-                    <option value="4">Cancelado</option>
+                  <select class="form-control" id="status">
+                    <option value="1">Pago</option>
+                    <option value="2">No Pago</option>
+                    <option value="3">Cancelado</option>
                   </select>
-                  <label for="estado-remision">Estado Remisión</label>
+                  <label for="status">Estado</label>
                 </div>
               </div>
-              <!-- ID REMISIÓN -->
-              <input type="hidden" id="id-remision">
+              <!-- DESCRIPCIÓN -->
+              <div class="col-12" bis_skin_checked="1">
+                <div class="form-floating" bis_skin_checked="1">
+                  <textarea id="description" class="form-control" cols="30" rows="10" placeholder=""></textarea>
+                  <label for="description">Descripción</label>
+                </div>
+              </div>
+
+              <!-- ID DEL PAGO DE COMISIÓN -->
+              <input type="hidden" id="id-pago-comision">
               <!-- LI DE ERRORES -->
               <div class="col-12">
                 <ul id="errors">
@@ -215,7 +144,11 @@
       </div>
     </div>
   </div>
-  <!-- Modal Editar Estado de Remisión End -->
+  <!-- Modal Editar producto End -->
+
+
+
+
 
   <!-- Footer Start -->
   <div class="container-fluid bg-dark footer pt-5 wow fadeIn" data-wow-delay="0.1s">
@@ -296,7 +229,7 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Custom Javascript -->
-  <script src="./../js/remisiones.js" type="module"></script>
+  <script type="module" src="./../js/payment-comisions.js"></script>
 </body>
 
 </html>

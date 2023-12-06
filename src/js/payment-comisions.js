@@ -5,26 +5,24 @@ validarPermiso();
 
 const d = document;
 
-let $detalleRemision,
-  $detalleModal,
-  $liErrorsModal,
-  $idRemision,
-  $estadoRemision,
+let $idPagoComision,
+  $estadoPagoComision,
+  $descripcionPagoComision,
   myModal,
   dataTable;
 
 // DECLARACIÓN DE FUNCIONES
 
-const cargarRemisiones = async () => {
+const cargarPagos = async () => {
   try {
 
     const errorCatchRemisiones = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.log('Ha ocurrido un error al crear las remisiones');
+        console.log('Ha ocurrido un error al cargar los pagos de comisiones');
     };
 
-    let response = await fetchRequest(null, errorCatchRemisiones, `${API_URL}/referral/all`);
+    let response = await fetchRequest(null, errorCatchRemisiones, `${API_URL}/commission-history/all`);
 
     console.log(response);
     if (!response) response = { data: [] };
@@ -32,7 +30,7 @@ const cargarRemisiones = async () => {
     if (dataTable !== undefined)
       dataTable.destroy();
 
-    dataTable = $('#remisiones').DataTable({
+    dataTable = $('#pago-comisiones').DataTable({
       language: {
         "decimal": "",
         "emptyTable": "No hay información",
@@ -56,57 +54,9 @@ const cargarRemisiones = async () => {
       data: response.data,
       "columns": [
         {
-          data: 'data',
-          title: 'Consecutivo',
+          data: 'description',
           render: function (data, type, row) {
-            if (type === 'display') {
-              return data.consecutive;
-            }
-            return data.consecutive;
-          },
-        },
-        {
-          data: 'data',
-          title: 'Fecha',
-          render: function (data, type, row) {
-
-            const fecha = new Date(data.date_of_elaboration).toLocaleString();
-            if (type === 'display') {
-              return fecha;
-            }
-            return fecha;
-          },
-        },
-        {
-          data: 'data',
-          render: function (data, type, row) {
-            if (type === 'display') {
-              return data.payment_method_value;
-            }
-            return data.payment_method_value;
-          },
-        },
-        {
-          data: 'data',
-          render: function (data, type, row) {
-            let txt = '';
-            switch (data.status) {
-              case '1':
-                txt = 'Pendiente Pago';
-                break;
-
-              case '2':
-                txt = 'Pendiente Entrega';
-                break;
-
-              case '3':
-                txt = 'Entregado';
-                break;
-
-              case '4':
-                txt = 'Cancelado';
-                break;
-            }
+            const txt = data ?? 'Sin descripción';
             if (type === 'display') {
               return txt;
             }
@@ -114,49 +64,103 @@ const cargarRemisiones = async () => {
           },
         },
         {
-          data: 'data',
+          data: 'amount',
           render: function (data, type, row) {
-            const vendedor = data.seller_id;
-
-            const nomVendedor = `${vendedor?.names ?? 'Pedido realizado por cliente'} ${vendedor?.surnames ?? ''}`;
+            const valorPago = `$${parseInt(data)}`;
             if (type === 'display') {
-              return nomVendedor;
+              return valorPago;
             }
-            return nomVendedor;
+            return valorPago;
           },
         },
         {
-          data: 'data',
+          data: 'status',
           render: function (data, type, row) {
-            const cliente = data.user_id;
+            let txt;
+            switch (data) {
+              case '1':
+                txt = 'Pago';
+                break;
 
-            const nomVendedor = `${cliente?.names} ${cliente?.surnames}`;
-            if (type === 'display') {
-              return nomVendedor;
+              case '2':
+                txt = 'Sin pago';
+                break;
+
+              case '3':
+                txt = 'Cancelado';
+                break;
+
+              default:
+                txt = 'Sin estado';
+                break;
             }
-            return nomVendedor;
+
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
           },
         },
         {
-          data: 'data',
+          data: 'referral_id',
           render: function (data, type, row) {
-            const zona = data.zone_id.name;
+            const txt = data.consecutive;
             if (type === 'display') {
-              return zona;
+              return txt;
             }
-            return zona;
+            return txt;
+          },
+        },
+        {
+          data: 'referral_id',
+          render: function (data, type, row) {
+            const txt = `$${parseInt(data.commission_default_value)}`;
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
+          },
+        },
+        {
+          data: 'referral_id',
+          render: function (data, type, row) {
+            const txt = `$${parseInt(data.commission_zone_value)}`;
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
+          },
+        },
+        {
+          data: 'referral_id',
+          render: function (data, type, row) {
+            const txt = `$${parseInt(data.commission_amount_value)}`;
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
+          },
+        },
+        {
+          data: 'referral_id',
+          render: function (data, type, row) {
+            const txt = `$${parseInt(data.commission_products_value)}`;
+            if (type === 'display') {
+              return txt;
+            }
+            return txt;
           },
         },
         {
           title: 'Acciones',
           orderable: false, // No permite ordenar esta columna
-          data: 'data',
+          data: null,
           render: function (data, type, row) {
-            if (data.status !== '4') {
+            if (data.status !== '3') {
 
               if (type === 'display') {
                 return `
-                <button type="button" id="btn-edit-product" data-id-referral="${data.id}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editStatusReferralModal">
+                <button type="button" id="btn-edit-product" data-id-payment-commission="${data.id}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editStatusPaymentComision">
                 <i class="bi bi-pencil-fill"></i>
                 </button>
                 `
@@ -179,46 +183,49 @@ const cargarRemisiones = async () => {
 
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
-  $idRemision = d.getElementById('id-remision');
-  $estadoRemision = d.getElementById('estado-remision');
+  $idPagoComision = d.getElementById('id-pago-comision');
+  $estadoPagoComision = d.getElementById('status');
+  $descripcionPagoComision = d.getElementById('description');
 
-  myModal = new bootstrap.Modal('#editStatusReferralModal', {
+  myModal = new bootstrap.Modal('#editStatusPaymentComision', {
     keyboard: false
   });
 
-  cargarRemisiones();
+  cargarPagos();
 }); //ok
 
 d.addEventListener('click', async e => {
 
   if (e.target.matches('#btn-edit-product, #btn-edit-product > *')) {
 
-    const idReferral = (e.target.matches('#btn-edit-product'))
-      ? e.target.getAttribute('data-id-referral')
-      : e.target.parentElement.getAttribute('data-id-referral');
+    const idPagoComision = (e.target.matches('#btn-edit-product'))
+      ? e.target.getAttribute('data-id-payment-commission')
+      : e.target.parentElement.getAttribute('data-id-payment-commission');
 
-    console.log(idReferral);
+    console.log(idPagoComision);
 
     const onErrorCatch = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al obtener la remisión.');
+        console.error('Ha ocurrido un error al obtener el estado del pago de la comisión.');
     };
 
     // se hace la petición por AJAX al backend
-    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/referral/find/${idReferral}`);
+    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/commission-history/find/${idPagoComision}`);
 
     if (response) {
       console.log(response);
 
-      $estadoRemision.querySelectorAll('option').forEach(op => {
-        if (response.data.referralExis.status === op.value)
+      $estadoPagoComision.querySelectorAll('option').forEach(op => {
+        if (response.data.status === op.value)
           op.selected = true;
         else
           op.removeAttribute('selected');
       });
 
-      $idRemision.value = idReferral;
+      $descripcionPagoComision.value = response.data.description;
+
+      $idPagoComision.value = idPagoComision;
 
     }
   }
@@ -228,23 +235,25 @@ d.addEventListener('click', async e => {
     const onErrorCatch = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al editar el estado de la remisión.');
+        console.error('Ha ocurrido un error al editar el estado del pago de la comisión.');
     };
 
 
     // se hace la petición por AJAX al backend
 
     const response = await fetchRequest(
-      null, onErrorCatch, `${API_URL}/referral/update-status-referral/${$idRemision.value}`, 'PATCH',
+      null, onErrorCatch, `${API_URL}/commission-history/update/${$idPagoComision.value}`, 'PATCH',
       {
-        status_referral: $estadoRemision[$estadoRemision.selectedIndex].value,
+        status: $estadoPagoComision[$estadoPagoComision.selectedIndex].value,
+        description: $descripcionPagoComision.value,
       }
     );
 
     if (response) {
-      cargarRemisiones();
+      cargarPagos();
       myModal.hide();
-      appendAlert('Estado de remisión editado correctamente');
+      appendAlert('Estado de pago de comisión editado correctamente');
     }
   }
+
 });

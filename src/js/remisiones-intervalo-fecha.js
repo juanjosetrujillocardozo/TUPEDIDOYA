@@ -1,21 +1,67 @@
+// IMPORTACIÓN DE MÓDULOS
 import { API_URL } from './../constants/constants.js';
-import { appendAlert, fetchRequest, showDeleteConfirmationAlert, validarPermiso } from './modules/index.js';
+import { validarPermiso, fetchRequest, } from './modules/index.js';
 
 validarPermiso();
 
+// DECLARACIÓN DE VARIABLES
 const d = document;
 
-let $detalleRemision,
-  $detalleModal,
-  $liErrorsModal,
-  $idRemision,
-  $estadoRemision,
-  myModal,
-  dataTable;
+let $fechaIni,
+    $fechaFin,
+    $errors,
+    dataTable,
+    modalFecha;
 
 // DECLARACIÓN DE FUNCIONES
+const validarErrores = function (serverError = null, editar = false, limpiar = false) {
 
-const cargarRemisiones = async () => {
+  const errors = (serverError) ? serverError : [];
+
+  if (!limpiar) {
+
+    if (!$fechaIni.value)
+      errors.push({ tp: 1, error: 'Falta la fecha inicial' });
+    
+    if (!$fechaFin.value)
+      errors.push({ tp: 2, error: 'Falta la fecha final' });
+
+    if ($fechaIni.value > $fechaFin.value)
+      errors.push({ error: 'La fecha inicial no puede ser mayor a la fecha final' });
+    
+  }
+
+  const tpErrors = {};
+  $errors.innerHTML = '';
+  if (errors.length) {
+    const $fragment = d.createDocumentFragment();
+    errors.forEach(e => {
+      tpErrors[e.tp] = true;
+      const $li = d.createElement("li");
+      $li.textContent = e.error;
+      $fragment.appendChild($li);
+    });
+
+    console.log(tpErrors);
+    $errors.appendChild($fragment);
+    (1 in tpErrors) ? $fechaIni.classList.add('error') : $fechaIni.classList.remove('error');
+    (2 in tpErrors) ? $fechaFin.classList.add('error') : $fechaFin.classList.remove('error');
+
+  } else {
+    $fechaIni.classList.remove('error');
+    $fechaFin.classList.remove('error');
+  }
+
+  if (errors.length)
+    d.getElementById('btn-reporte').setAttribute('disabled', 'true');
+  else
+    d.getElementById('btn-reporte').removeAttribute('disabled');
+
+  return errors.length;
+}
+
+
+const cargarRemisiones = async (data) => {
   try {
 
     const errorCatchRemisiones = (e) => {
@@ -53,7 +99,7 @@ const cargarRemisiones = async () => {
           "previous": "Anterior"
         }
       },
-      data: response.data,
+      data,
       "columns": [
         {
           data: 'data',
@@ -174,56 +220,42 @@ const cargarRemisiones = async () => {
     console.log(err);
   }
 
-}; //ok
-
-
+};
 // DELEGACIÓN DE EVENTOS
-d.addEventListener('DOMContentLoaded', async e => {
-  $idRemision = d.getElementById('id-remision');
-  $estadoRemision = d.getElementById('estado-remision');
+d.addEventListener('DOMContentLoaded', e => {
+  $fechaIni = d.getElementById('init-date');
+  $fechaFin = d.getElementById('end-date');
+  $errors = d.getElementById('errors');
 
-  myModal = new bootstrap.Modal('#editStatusReferralModal', {
+  modalFecha = new bootstrap.Modal('#reportesModal', {
     keyboard: false
   });
-
-  cargarRemisiones();
-}); //ok
+});
 
 d.addEventListener('click', async e => {
-
-  if (e.target.matches('#btn-edit-product, #btn-edit-product > *')) {
-
-    const idReferral = (e.target.matches('#btn-edit-product'))
-      ? e.target.getAttribute('data-id-referral')
-      : e.target.parentElement.getAttribute('data-id-referral');
-
-    console.log(idReferral);
-
+  if (e.target.matches('#btn-fechas')) {
     const onErrorCatch = (e) => {
       console.log(e);
       if (e instanceof TypeError)
-        console.error('Ha ocurrido un error al obtener la remisión.');
+        console.error('Ha ocurrido un error al obtener las fechas mínima y máxima.');
     };
 
+
     // se hace la petición por AJAX al backend
-    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/referral/find/${idReferral}`);
 
-    if (response) {
-      console.log(response);
-
-      $estadoRemision.querySelectorAll('option').forEach(op => {
-        if (response.data.referralExis.status === op.value)
-          op.selected = true;
-        else
-          op.removeAttribute('selected');
-      });
-
-      $idRemision.value = idReferral;
-
-    }
+    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/referral/date-min-max`);
+    $fechaIni.min = response.data.dateMin.split(' ')[0];
+    $fechaIni.max = response.data.dateMax.split(' ')[0];
+    $fechaFin.min = response.data.dateMin.split(' ')[0];
+    $fechaFin.max = response.data.dateMax.split(' ')[0];
   }
 
-  if (e.target.matches('#btn-guardar-cambios')) {
+  if (e.target.matches('#btn-gen-report')) {
+    console.log($fechaIni.value === $fechaFin.value);
+
+    const errores = validarErrores();
+    if (errores > 0)
+      return;
 
     const onErrorCatch = (e) => {
       console.log(e);
@@ -231,20 +263,35 @@ d.addEventListener('click', async e => {
         console.error('Ha ocurrido un error al editar el estado de la remisión.');
     };
 
+    const onErrorResponse = (res, response) => {
+      console.log(response);
+      if (res.status == 400) {
+        validarErrores([{ error: response.message }]);
+      }
+    };
 
     // se hace la petición por AJAX al backend
 
-    const response = await fetchRequest(
-      null, onErrorCatch, `${API_URL}/referral/update-status-referral/${$idRemision.value}`, 'PATCH',
-      {
-        status_referral: $estadoRemision[$estadoRemision.selectedIndex].value,
-      }
-    );
+    console.log($fechaIni);
 
-    if (response) {
-      cargarRemisiones();
-      myModal.hide();
-      appendAlert('Estado de remisión editado correctamente');
-    }
+    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/referral/reports-date?date-init=${$fechaIni.value}&date-end=${$fechaFin.value}`);
+
+
+    d.querySelector('.table-container').classList.remove('d-none');
+    cargarRemisiones(response.data);
+    modalFecha.hide();
+
+  }
+
+  if (e.target.matches('#btn-reporte')) { 
+    const errorCatchReporte = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.log('Ha ocurrido un error al generar el reporte de remisiones');
+    };
+
+    let response = await fetchRequest(null, errorCatchReporte, `${API_URL}/referral/excel-referral-download-date?date-init=${$fechaIni.value}&date-end=${$fechaFin.value}`, 'POST', null, true, true);
+
+    console.log(response);
   }
 });

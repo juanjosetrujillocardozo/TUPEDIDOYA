@@ -88,6 +88,7 @@
               <a href="descuentos.html" class="dropdown-item">Descuentos</a>
               <a href="metodos-pago.html" class="dropdown-item">Métodos de Pago</a>
               <a href="remisiones.html" class="dropdown-item">Remisiones</a>
+              <a href="pagos-comisiones.html" class="dropdown-item">Pagos Comisiones</a>
             </div>
           </div>
           <!-- INVENTARIO -->
@@ -100,17 +101,25 @@
           </div>
           <!-- ZONAS -->
           <a href="zonas.html" class="nav-item nav-link" id="zonas">Zonas</a>
+          <!-- REPORTES -->
+          <div class="nav-item dropdown" id="reportes">
+            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Reportes</a>
+            <div class="dropdown-menu m-0">
+              <a href="remisiones-intervalo-fecha.html" class="dropdown-item">Remisiones por fecha</a>
+              <a href="remisiones-vendedor.html" class="dropdown-item">Remisiones por vendedor</a>
+            </div>
+          </div>
         </div>
         <div class="d-none d-lg-flex ms-2">
-          <a class="btn-sm-square bg-white rounded-circle ms-3" href="">
-            <small class="fa fa-search text-body"></small>
-          </a>
-          <a class="btn-sm-square bg-white rounded-circle ms-3" href="login.html">
+          <a class="btn-sm-square bg-white rounded-circle ms-3" href="perfil.html">
             <small class="fa fa-user text-body"></small>
           </a>
           <a class="btn-sm-square bg-white rounded-circle ms-3 btn-shopping-cart" data-bs-toggle="modal"
             data-bs-target="#shoppingCartModal">
             <small class="fa fa-shopping-bag text-body"></small>
+          </a>
+          <a class="btn-sm-square bg-white rounded-circle ms-3" id="sign-out">
+            <small class="fa fa-sign-out-alt text-body"></small>
           </a>
         </div>
       </div>

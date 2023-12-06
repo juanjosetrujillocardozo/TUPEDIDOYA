@@ -197,7 +197,6 @@ const addProductCart = async (inforProduct) => {
 
   // si el producto no existe lo agregamos
   if (!product) {
-    console.log('se agrega');
 
     const errorCatchAddItem = (e) => {
       console.log(e);
@@ -215,7 +214,7 @@ const addProductCart = async (inforProduct) => {
     const res = await fetchRequest(onErrorResponse, errorCatchAddItem, `${API_URL}/shopping-cart/add-shopping-cart`, 'POST', {
       product: parseInt(inforProduct.id),
       count: 1,
-      customer: parseInt(idCliente),
+      customer: (perfil === 'CLI') ? null : parseInt(idCliente),
     });
 
     if (res)
@@ -308,14 +307,18 @@ const modificarCarrito = async (elem, agregar = true) => {
 
   let productos = await fetchRequest(null, errorCatchCarritoCompras, `${API_URL}/shopping-cart/all`);
   if (!productos.data.length) {
-    // ABRIMOS EL CARRITO DE COMPRAS PARA QUE EL VENDEDOR SELECCIONE EL CLIENTE
-    await obtenerClientes(true, idCliente || null);
-    if (idCliente && agregar) {
+    if (perfil !== 'CLI') {
+      await obtenerClientes(true, idCliente || null);
+      if (idCliente && agregar) {
+        addProductCart(obtenerInfoProducto(elem));
+      } else if (!idCliente) {
+        // ABRIMOS EL CARRITO DE COMPRAS PARA QUE EL VENDEDOR SELECCIONE EL CLIENTE
+        $modalShoppingCart.show();
+        $liErrors.innerHTML = `<li>Seleccione un cliente</li>`
+        idProductoSinCliente = obtenerInfoProducto(elem);
+      }
+    } else if (agregar) {
       addProductCart(obtenerInfoProducto(elem));
-    } else if (!idCliente) {
-      $modalShoppingCart.show();
-      $liErrors.innerHTML = `<li>Seleccione un cliente</li>`
-      idProductoSinCliente = obtenerInfoProducto(elem);
     }
   } else {
     if (!idCliente) {
@@ -339,20 +342,21 @@ const construirCarrito = async () => {
   let productos = await fetchRequest(null, errorCatchCarritoCompras, `${API_URL}/shopping-cart/all`);
   d.querySelector('.btn-close').classList.remove('d-none');
 
+  if (localStorage.getItem('ROLE-USER') !== 'CLI') {
+    await obtenerClientes(true, productos.data[0]?.user_id.id);
+  } else {
+    // si el usuario es un cliente no necesita el select de cliente
+    const $customerFields = d.querySelectorAll('.customer-fields');
+    $customerFields.forEach(cf => {
+      d.getElementById('modal-fields').removeChild(cf);
+    });
+  }
+
   if (productos && productos.data.length) {
 
     // AGREGAMOS EL BOTON DE COMPRA
     $continueShoppingContainer.classList.remove('d-none');
 
-    if (localStorage.getItem('ROLE-USER') !== 'CLI') {
-      await obtenerClientes(true, productos.data[0].user_id.id);
-    } else {
-      // si el usuario es un cliente no necesita el select de cliente
-      const $customerFields = d.querySelectorAll('.customer-fields');
-      $customerFields.forEach(cf => {
-        d.getElementById('modal-fields').removeChild(cf);
-      });
-    }
     let total = 0;
     for (const data of productos.data) {
       const $tr = d.createElement('tr');
@@ -481,7 +485,9 @@ const validarErrores = function (serverError = null, limpiar = false) {
 
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
+  perfil = localStorage.getItem('ROLE-USER');
   console.log('carga el dom');
+
   $productCardTemplate = d.getElementById('card-product-template').content,
     $tabProductsTemplate = d.getElementById('tab-products-template').content,
     $tabButtonTemplate = d.getElementById('tab-button-template').content,
@@ -498,9 +504,10 @@ d.addEventListener('DOMContentLoaded', async e => {
   $paymentMethod = d.getElementById('payment-method');
   $zone = d.getElementById('zone');
 
-  await obtenerZonas();
-  await obtenerMetodosPago();
-
+  if (perfil) {
+    await obtenerZonas();
+    await obtenerMetodosPago();
+  }
 
   const errorCatchProductos = (e) => {
     console.log(e);
@@ -511,9 +518,8 @@ d.addEventListener('DOMContentLoaded', async e => {
   let productos = await fetchRequest(null, errorCatchProductos, `${API_URL}/product/all`);
   console.log(productos);
 
-  perfil = localStorage.getItem('ROLE-USER');
-  // SI EL USUARIO NO ESTÁ AUTENTICADO O NO ES UN VENDEDOR, SE ASUME QUE ES UN CLIENTE
-  if (!perfil || perfil !== 'VEN') {
+  // SI EL USUARIO NO ESTÁ AUTENTICADO SE ASUME QUE ES UN CLIENTE
+  if (!perfil || perfil === 'CLI') {
     construirTarjetasProductos(productos.data);
   } else {
     construirTarjetasProductos(productos.data, true);
@@ -543,7 +549,6 @@ d.addEventListener('click', async e => {
     construirCarrito();
   }
 
-  console.log(e.target);
   if (e.target.matches('#continue-shopping')) {
     d.getElementById('cart-payment-method').classList.remove('d-none');
     d.getElementById('cart-zone').classList.remove('d-none');
@@ -576,6 +581,11 @@ d.addEventListener('click', async e => {
       }
 
     }
+  }
+
+  if (e.target.matches('#sign-out, #sign-out *')) {
+    localStorage.clear();
+    location.href = 'login.html';
   }
 
 });
