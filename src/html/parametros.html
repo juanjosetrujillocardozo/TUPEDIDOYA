@@ -129,99 +129,47 @@
   <div class="container-xxl py-6">
     <div class="container">
       <div class="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 500px;">
-        <h1 class="display-5 mb-3">Productos</h1>
-        <p>En este apartado podrás crear y administrar todos tus productos</p>
+        <h1 class="display-5 mb-3">Parámetros de la empresa</h1>
+        <p>Administra la información de tu empresa que se mostrará a los clientes que visiten el sitio web</p>
       </div>
       <div class="row g-5 justify-content-center">
 
         <div class="col-lg-7 col-md-12 wow fadeInUp" data-wow-delay="0.5s">
-          <form id="form-products">
+          <form id="form-parameters">
             <div class="row g-3">
-              <!-- CÓDIGO DEL PRODUCTO -->
-              <div class="col-md-6">
+              <!-- NOMBRE EMPRESA -->
+              <div class="col-12">
                 <div class="form-floating">
-                  <input type="text" class="form-control" id="code" placeholder="Código del Producto">
-                  <label for="code">Código del Producto</label>
+                  <input type="text" class="form-control" id="nombre-empresa" placeholder="">
+                  <label for="nombre-empresa">Nombre Empresa</label>
                 </div>
               </div>
-              <!-- NOMBRE DEL PRODUCTO -->
-              <div class="col-md-6">
+              <!-- DIRECCIÓN -->
+              <div class="col-12">
                 <div class="form-floating">
-                  <input type="text" class="form-control" id="name" placeholder="Nombre del Producto">
-                  <label for="name">Nombre Producto</label>
+                  <input type="text" class="form-control" id="direccion" placeholder="">
+                  <label for="direccion">Dirección</label>
                 </div>
               </div>
-              <!-- producto DE INVENTARIO -->
-              <div class="col-md-6">
+              <!-- TELÉFONO -->
+              <div class="col-12">
                 <div class="form-floating">
-                  <select class="form-control" id="grupo-inventario">
-                    <option value="" disabled selected>Seleccione...</option>
-                  </select>
-                  <label for="grupo-inventario">Grupo Inventario</label>
+                  <input type="text" class="form-control" id="telefono" placeholder="">
+                  <label for="telefono">Teléfono</label>
                 </div>
               </div>
-              <!-- STOCK -->
-              <div class="col-md-6">
+              <!-- CORREO -->
+              <div class="col-12">
                 <div class="form-floating">
-                  <input type="number" class="form-control" id="stock" placeholder="stock">
-                  <label for="stock">Stock</label>
+                  <input type="text" class="form-control" id="correo" placeholder="">
+                  <label for="correo">Correo</label>
                 </div>
               </div>
-              <!-- STOCK MÍNIMO -->
-              <div class="col-md-6">
+              <!-- DESCRIPCIÓN -->
+              <div class="col-12">
                 <div class="form-floating">
-                  <input type="number" class="form-control" id="stock-min" placeholder="stock">
-                  <label for="stock">Stock Mínimo</label>
-                </div>
-              </div>
-              <!-- PRECIO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="number" class="form-control" id="price" placeholder="precio">
-                  <label for="precio">Precio</label>
-                </div>
-              </div>
-              <!-- COMISIÓN -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="comision"></select>
-                  <label for="comision">Comisión</label>
-                </div>
-              </div>
-              <!-- DESCUENTO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="discount"></select>
-                  <label for="discount">Descuento</label>
-                </div>
-              </div>
-              <!-- ESTADO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="status">
-                    <option value="1" selected>Activo</option>
-                    <option value="0">Inactivo</option>
-                  </select>
-                  <label for="status">Estado</label>
-                </div>
-              </div>
-              <!-- TIPO PRODUCTO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="type-product">
-                    <option value="1" selected>Producto</option>
-                    <option value="2">Servicio</option>
-                  </select>
-                  <label for="status">Tipo Producto</label>
-                </div>
-              </div>
-              <!-- INVENTARIABLE -->
-              <div class="col-md-12">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="" id="inventoriable">
-                  <label class="form-check-label" for="inventoriable">
-                    ¿Es inventariable?
-                  </label>
+                  <textarea class="form-control" id="descripcion" placeholder="" cols="30" rows="10"></textarea>
+                  <label for="correo">Descripción</label>
                 </div>
               </div>
               <!-- LI DE ERRORES -->
@@ -230,7 +178,7 @@
                 </ul>
               </div>
               <div class="col-12 text-center">
-                <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Crear Producto</button>
+                <button class="btn btn-primary rounded-pill py-3 px-5" type="submit">Guardar Cambios</button>
               </div>
             </div>
           </form>
@@ -239,153 +187,6 @@
     </div>
   </div>
   <!-- Contact End -->
-
-  <!-- Data Table Start -->
-  <div class="container table-container">
-    <table id="products" class="display" style="width:100%">
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Nombre</th>
-          <th>Estado</th>
-          <th>Stock</th>
-          <th>Stock Mínimo</th>
-          <th>Precio</th>
-          <th>Inventariable</th>
-          <th>Tipo</th>
-          <th>Comisión</th>
-          <th>Descuento</th>
-          <th>Grupo de Inventario</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- Data Table End -->
-
-  <!-- Modal Editar PRODUCTO Start -->
-  <!-- Modal -->
-  <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="editProductModalLabel">Editar Producto</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="form-edit-group">
-            <div class="row g-3">
-              <!-- CÓDIGO DEL PRODUCTO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="text" class="form-control" id="code" placeholder="Código del Producto">
-                  <label for="code">Código del Producto</label>
-                </div>
-              </div>
-              <!-- NOMBRE DEL PRODUCTO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="text" class="form-control" id="name" placeholder="Nombre del Producto">
-                  <label for="name">Nombre Producto</label>
-                </div>
-              </div>
-              <!-- GRUPO DE INVENTARIO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="grupo-inventario">
-                  </select>
-                  <label for="grupo-inventario">Grupo Inventario</label>
-                </div>
-              </div>
-              <!-- STOCK -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="number" class="form-control" id="stock" placeholder="stock">
-                  <label for="stock">Stock</label>
-                </div>
-              </div>
-              <!-- STOCK MÍNIMO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="number" class="form-control" id="stock-min" placeholder="stock">
-                  <label for="stock">Stock Mínimo</label>
-                </div>
-              </div>
-              <!-- PRECIO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <input type="number" class="form-control" id="price" placeholder="precio">
-                  <label for="precio">Precio</label>
-                </div>
-              </div>
-              <!-- COMISIÓN -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="comision"></select>
-                  <label for="comision">Comisión</label>
-                </div>
-              </div>
-              <!-- DESCUENTO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="discount"></select>
-                  <label for="discount">Descuento</label>
-                </div>
-              </div>
-              <!-- ESTADO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="status">
-                    <option value="1" selected>Activo</option>
-                    <option value="0">Inactivo</option>
-                  </select>
-                  <label for="status">Estado</label>
-                </div>
-              </div>
-              <!-- TIPO PRODUCTO -->
-              <div class="col-md-6">
-                <div class="form-floating">
-                  <select class="form-control" id="type-product">
-                    <option value="1" selected>Producto</option>
-                    <option value="2">Servicio</option>
-                  </select>
-                  <label for="status">Tipo de Producto</label>
-                </div>
-              </div>
-              <!-- INVENTARIABLE -->
-              <div class="col-md-12">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="" id="inventoriable-modal">
-                  <label class="form-check-label" for="inventoriable-modal">
-                    ¿Es inventariable?
-                  </label>
-                </div>
-              </div>
-              <!-- ID DEL GRUPO -->
-              <input type="hidden" id="id-product">
-              <!-- LI DE ERRORES -->
-              <div class="col-12">
-                <ul id="errors">
-                </ul>
-              </div>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="button" id="btn-guardar-cambios" class="btn btn-primary">Guardar Cambios</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Modal Editar producto End -->
-
-
-
-
 
   <!-- Footer Start -->
   <div class="container-fluid bg-dark footer mt-5 pt-5 wow fadeIn" data-wow-delay="0.1s">
@@ -427,6 +228,7 @@
   <!-- Footer End -->
 
 
+
   <!-- Back to Top -->
   <a href="#" class="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i class="bi bi-arrow-up"></i></a>
 
@@ -447,7 +249,7 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <!-- Custom Javascript -->
-  <script type="module" src="./../js/products.js"></script>
+  <script src="./../js/parametros.js" type="module"></script>
   <script src="./../js/modules/cargar-parametros.js" type="module"></script>
 </body>
 

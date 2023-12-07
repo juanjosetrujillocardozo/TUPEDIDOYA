@@ -11,6 +11,9 @@ const sinPermisos = [
   '/src/html/zonas.html',
   '/src/html/pagos-comisiones.html',
   '/src/html/remisiones-intervalo-fecha.html',
+  '/src/html/remisiones-vendedor.html',
+  '/src/html/remisiones-cliente.html',
+  '/src/html/parametros.html',
 ];
 
 // SECCIONES DE LA NAV QUE EL USUARIO NO DEBE VISUALIZAR
@@ -20,6 +23,7 @@ const seccionesNavSinPermiso = [
   'inventario',
   'zonas',
   'reportes',
+  'parametros',
 ];
 
 const roleUser = localStorage.getItem('ROLE-USER');
