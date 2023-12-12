@@ -1,3 +1,5 @@
+import { FRONT_URL } from './../../constants/constants.js';
+
 export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null, autenticacionRequerida = true, reporte = false) => {
 
   try {
@@ -46,7 +48,7 @@ export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, me
       return response;
     } else {
       if (res.status == 401 && autenticacionRequerida) {
-        location.href = "http://127.0.0.1:5501/src/html/login.html";
+        location.href = `${FRONT_URL}/src/html/login.html`;
       } else {
         console.log(res);
         console.log(response);

@@ -1,3 +1,4 @@
+import { API_URL, FRONT_URL } from "./../constants/constants.js";
 // DECLARACIÓN DE VARIABLES
 const d = document;
 
@@ -67,7 +68,7 @@ d.addEventListener('click', async e => {
 
     try {
       // se hace la petición por AJAX al backend
-      const res = await fetch('http://localhost:3000/auth/login', {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'accept': 'application/json; charset=utf-8',
@@ -87,7 +88,7 @@ d.addEventListener('click', async e => {
         //     console.log('Ha ocurrido un error al obtener los datos del perfil del usuario');
         // };
 
-        const resPerfil = await fetch('http://localhost:3000/user/profile', {
+        const resPerfil = await fetch(`${API_URL}/user/profile`, {
           method: 'GET',
           headers: {
             'accept': 'application/json; charset=utf-8',
@@ -104,7 +105,7 @@ d.addEventListener('click', async e => {
         if (dataPerfil)
           localStorage.setItem('ROLE-USER', dataPerfil.data.role.name);
 
-        location.href = "http://127.0.0.1:5501/src/html/index.html";
+        location.href = `${FRONT_URL}/src/html/index.html`;
       } else {
         if (res.status == 401) {
           // código http para las credenciales inválidas
