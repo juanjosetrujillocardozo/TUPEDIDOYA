@@ -1,6 +1,6 @@
 import { FRONT_URL } from './../../constants/constants.js';
 
-export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null, autenticacionRequerida = true, reporte = false) => {
+export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null, autenticacionRequerida = true, reporte = false, subirImagen = false) => {
 
   try {
     const dataRequest = {
@@ -14,6 +14,11 @@ export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, me
 
     if (body)
       dataRequest.body = JSON.stringify(body);
+    
+    if (subirImagen) {
+      delete dataRequest.headers['content-type'];
+      dataRequest.body = body;
+    }
 
     const res = await fetch(URL, dataRequest);
 
@@ -50,8 +55,10 @@ export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, me
       if (res.status == 401 && autenticacionRequerida) {
         location.href = `${FRONT_URL}/src/html/login.html`;
       } else {
-        console.log(res);
         console.log(response);
+        if (res.status === 400 && response.hasOwnProperty("attributeExist"))
+          response.message = `El ${response.attributeExist.key} ya está en uso.`;
+
         if (onErrorResponse) onErrorResponse(res, response);
       }
     }

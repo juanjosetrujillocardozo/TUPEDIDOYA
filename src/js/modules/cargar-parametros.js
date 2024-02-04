@@ -27,12 +27,22 @@ d.addEventListener('DOMContentLoaded', async e => {
     d.querySelectorAll('.nombre-empresa-parametro').forEach(el => el.innerHTML += response.data.name_enterprise);
     d.querySelectorAll('.direccion-empresa-parametro').forEach(el => el.innerHTML += response.data.address);
     d.querySelectorAll('.telefono-empresa-parametro').forEach(el => el.innerHTML += response.data.phone);
-    d.querySelectorAll('.correo-empresa-parametro').forEach(el => el.innerHTML += response.data.email);
+    d.querySelectorAll('.correo-empresa-parametro').forEach(el => {
+      el.innerHTML += response.data.email;
+      el.href = `mailto:${response.data.email}`;
+    });
     d.querySelectorAll('.descripcion-empresa-parametro').forEach(el => el.innerHTML += response.data.description);
     // $nombreEmpresa.value = response.data.name_enterprise;
     // $direccion.value = response.data.address;
     // $telefono.value = response.data.phone;
     // $correo.value = response.data.email;
     // $descripcion.value = response.data.description;
+  }
+});
+
+d.addEventListener('click', e => {
+  if (e.target.matches('#sign-out, #sign-out *')) {
+    localStorage.clear();
+    location.href = 'login.html';
   }
 });

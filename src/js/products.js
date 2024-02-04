@@ -16,6 +16,7 @@ let $code,
   $inventoriable,
   $grupoInventario,
   $typeProduct,
+  $imgProduct,
   $liErrors,
   $idProductModal,
   $codeProductModal,
@@ -29,6 +30,7 @@ let $code,
   $inventoriableProductModal,
   $statusProductModal,
   $typeProductModal,
+  $imgProductModal,
   $liErrorsProductModal,
   $tbody,
   dataTable,
@@ -50,6 +52,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   const $inputInventoriable = editar ? $inventoriableProductModal : $inventoriable;
   const $inputComision = editar ? $comisionProductModal : $comision;
   const $inputDescuento = editar ? $descuentoProductModal : $descuento;
+  const $inputImg = editar ? $imgProductModal : $imgProduct;
 
 
   if (!limpiar) {
@@ -85,6 +88,9 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
       errores.push({ tp: 7, error: 'Falta el precio del producto' });
     else if (!(/^[0-9]+$/.test($inputPrice.value)))
       errores.push({ tp: 7, error: 'El precio introducido no es válido.', });
+    
+    if (!editar && !$inputImg.value)
+      errores.push({ tp: 8, error: 'Falta la imagen del producto' });
 
   }
 
@@ -107,6 +113,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     (5 in tpErrors) ? $inputStock.classList.add('error') : $inputStock.classList.remove('error');
     (6 in tpErrors) ? $inputStockMin.classList.add('error') : $inputStockMin.classList.remove('error');
     (7 in tpErrors) ? $inputPrice.classList.add('error') : $inputPrice.classList.remove('error');
+    (8 in tpErrors) ? $inputImg.classList.add('error') : $inputImg.classList.remove('error');
   } else {
     $inputCode.classList.remove('error');
     $inputName.classList.remove('error');
@@ -114,6 +121,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     $inputGrupoInventario.classList.remove('error');
     $inputStockMin.classList.remove('error');
     $inputPrice.classList.remove('error');
+    $inputImg.classList.remove('error');
   }
 
   return errores.length;
@@ -249,6 +257,23 @@ const cargarProductos = async () => {
           },
         },
         {
+          data: 'img',
+          title: 'Imagen',
+          render: function (data, type, row) {
+              console.log(data);
+              // Personaliza el contenido de la celda para mostrar la imagen
+              return `<img
+                        src="http://localhost:3000/${data}"
+                        alt="Sin imagen"
+                        style="
+                          width: 100px;
+                          height: 100px;
+                          object - fit: cover;
+                        "
+                      >`;
+          }
+        },
+        {
           title: 'Acciones',
           orderable: false, // No permite ordenar esta columna
           data: 'id',
@@ -381,6 +406,8 @@ d.addEventListener('DOMContentLoaded', async e => {
   $inventoriable = d.getElementById('inventoriable');
   $grupoInventario = d.getElementById('grupo-inventario');
   $typeProduct = d.getElementById('type-product');
+  $imgProduct = d.getElementById('img-product');
+
   $liErrors = d.getElementById('errors');
   $tbody = d.querySelector('#products > tbody');
 
@@ -399,6 +426,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $statusProductModal = d.querySelector('#editProductModal #status');
   $inventoriableProductModal = d.querySelector('#inventoriable-modal');
   $typeProductModal = d.querySelector('#editProductModal #type-product');
+  $imgProductModal = d.querySelector('#editProductModal #img-product');
   $liErrorsProductModal = d.querySelector('#editProductModal #errors');
 
   // OBTENEMOS LOS GRUPOS DE INVENTARIO
@@ -454,11 +482,19 @@ d.addEventListener('submit', async e => {
     });
 
     if (response) {
+      const formData = new FormData();
+      formData.append('image', $imgProduct.files[0]);
+
+      const responseImg = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/product/upload-image-product/${response.data.id}`, 'PATCH', formData, true, false, true);
       e.target.reset();
       cargarProductos();
       appendAlert('Producto creado correctamente');
     }
 
+  }
+
+  if (e.target.matches('#form-edit-product')) {
+    e.preventDefault();
   }
 });
 
@@ -469,8 +505,6 @@ d.addEventListener('click', async e => {
     const idProduct = (e.target.matches('#btn-edit-product'))
       ? e.target.getAttribute('data-id-product')
       : e.target.parentElement.getAttribute('data-id-product');
-
-    console.log(idProduct);
 
     const onErrorCatch = (e) => {
       console.log(e);
@@ -483,6 +517,8 @@ d.addEventListener('click', async e => {
 
     if (response) {
       console.log(response);
+      d.getElementById('img-product-modal').src = `http://localhost:3000/${response.data.img}`;
+
 
       $codeProductModal.value = response.data.code;
       $nameProductModal.value = response.data.name;
@@ -581,6 +617,12 @@ d.addEventListener('click', async e => {
     );
 
     if (response) {
+
+      const formData = new FormData();
+      formData.append('image', $imgProductModal.files[0]);
+
+      const responseImg = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/product/upload-image-product/${$idProductModal.value}`, 'PATCH', formData, true, false, true);
+
       cargarProductos();
       myModal.hide();
       appendAlert('Producto editado correctamente');
@@ -622,4 +664,27 @@ d.addEventListener('click', async e => {
     };
     showDeleteConfirmationAlert('Eliminar Producto', 'Sí eliminas un producto, no podrás recuperarlo nuevamente.', confirmCallback);
   }
+
+  if (e.target.matches('#btn-img-product-modal')) {
+    document.querySelector('#editProductModal #img-product').click();
+  }
+});
+
+d.addEventListener('change', e => {
+
+  if (e.target == $imgProductModal) {
+    const selectedFile = $imgProductModal.files[0];
+
+    const reader = new FileReader();
+
+    const $img = document.getElementById("img-product-modal");
+    $img.title = selectedFile.name;
+
+    reader.onload = function(event) {
+      $img.src = event.target.result;
+    };
+
+    reader.readAsDataURL(selectedFile);
+  }
+
 });

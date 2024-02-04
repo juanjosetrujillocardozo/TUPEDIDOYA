@@ -432,6 +432,18 @@
   color: var(--dark) !important;
 }
 
+.correo-empresa-parametro {
+  color: #999999;
+}
+
+.top-bar .correo-empresa-parametro {
+  color: #555;
+}
+
+.a-button {
+  cursor: pointer;
+}
+
 /* MEDIA QUERYS */
 
 @media screen and (min-width: 425px) and (max-width: 629px) {

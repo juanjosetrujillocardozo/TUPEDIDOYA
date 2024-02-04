@@ -27,7 +27,6 @@ const seccionesNavSinPermiso = [
 ];
 
 const roleUser = localStorage.getItem('ROLE-USER');
-console.log(roleUser);
 
 export const validarPermiso = () => {
 

@@ -18,7 +18,9 @@ let perfil,
   $selectClientes,
   $tbodyShoppingCart,
   idCliente = null,
+  clickEnBoton = false,
   // esta variable almacena el primer producto que se agrega cuando el carrito de compras no tiene un cliente asignado
+  $ultimoInputCantidadModificado = null,
   idProductoSinCliente = null,
   agregarPrimerProducto = false,
   $continueShoppingContainer,
@@ -49,7 +51,6 @@ const construirTarjetasProductos = async (productos, vendedor = false) => {
 
   // AGRUPAMOS LOS PRODUCTOS
   productos = Object.groupBy(productos, p => p.inventory_group_id.name);
-  console.log(productos);
 
   const $fragmentTabs = d.createDocumentFragment(),
     $fragmentButtonTabs = d.createDocumentFragment();
@@ -83,20 +84,23 @@ const construirTarjetasProductos = async (productos, vendedor = false) => {
       // CREAMOS LA TARJETA PARA CADA PRODUCTO
       const $cardProduct = d.importNode($productCardTemplate, true);
 
+      new CampoNumerico($cardProduct.querySelector('.cantidad'));
+
       $labelOferta = $cardProduct.querySelector('.label-oferta');
       $price = $cardProduct.querySelector('.card-product-price')
       $priceWithDiscount = $cardProduct.querySelector('.card-product-price-discount');
       $labelStock = $cardProduct.querySelector('.label-stock');
+      const $img = $cardProduct.querySelector('img');
 
       $cardProduct.querySelector('.card-product-name').textContent = product.name;
       const price = parseInt(product.price);
       $price.textContent = `$${price.toLocaleString("en")}`;
-
+      $img.src = (product.img) ? `http://localhost:3000/${product.img}` : "./..//assets/img/producto-defecto.jpg";
 
       if (perfil) {
         const productShoppingCart = await buscarProductoEnCarrito(product.id);
         if (productShoppingCart)
-          $cardProduct.querySelector('.cantidad').textContent = productShoppingCart.data.count;
+          $cardProduct.querySelector('.cantidad').value = productShoppingCart.data.count;
       }
 
       $cardProduct.querySelector('.controls-card').setAttribute('data-id-product', product.id);
@@ -127,7 +131,6 @@ const construirTarjetasProductos = async (productos, vendedor = false) => {
 
       $labelStock.textContent = txt;
       $productList.prepend($cardProduct);
-      console.log($tabProducts);
 
     }
     $fragmentTabs.appendChild($tabProducts)
@@ -154,7 +157,6 @@ const obtenerClientes = async (editar = false, idCliente = null) => {
 
   let response = await fetchRequest(onErrorResponse, errorCatchClientes, `${API_URL}/user/all`);
   response.data = response.data.filter(g => g.status && g.role.name === 'CLI');
-  console.log(response.data);
 
   if (!response || !response.data.length) {
     $selectClientes.innerHTML = `<option>No hay clientes</option>`;
@@ -218,7 +220,7 @@ const addProductCart = async (inforProduct) => {
     });
 
     if (res)
-      inforProduct.cantidad.textContent = 1;
+      inforProduct.cantidad.value = 1;
 
   } else {
 
@@ -241,7 +243,7 @@ const addProductCart = async (inforProduct) => {
       count: product.data.count + 1,
     });
     if (res)
-      inforProduct.cantidad.textContent = product.data.count + 1;
+      inforProduct.cantidad.value = product.data.count + 1;
 
   }
 };
@@ -255,7 +257,6 @@ const removeProductCart = async (inforProduct) => {
 
     // const product = await buscarProductoEnCarrito(inforProduct.id);
     if (product.data.count == 1) {
-      console.log('se elimina');
       const errorCatchDeleteItem = (e) => {
         console.log(e);
         if (e instanceof TypeError)
@@ -271,7 +272,7 @@ const removeProductCart = async (inforProduct) => {
 
       const res = await fetchRequest(onErrorResponse, errorCatchDeleteItem, `${API_URL}/shopping-cart/delete-shopping-cart/${inforProduct.id}`, 'DELETE');
       if (res)
-        inforProduct.cantidad.textContent = 0;
+        inforProduct.cantidad.value = 0;
 
     } else {
       console.log('se actualiza');
@@ -292,7 +293,7 @@ const removeProductCart = async (inforProduct) => {
         count: product.data.count - 1,
       });
       if (res)
-        inforProduct.cantidad.textContent = product.data.count - 1;
+        inforProduct.cantidad.value = product.data.count - 1;
     }
   }
 };
@@ -403,7 +404,6 @@ const obtenerZonas = async () => {
   };
 
   let response = await fetchRequest(null, errorCatchZonas, `${API_URL}/zone/all`);
-  console.log(response);
 
   if (!response || !response.data.length) {
     $zone.innerHTML = `<option>No hay zonas</option>`;
@@ -429,7 +429,6 @@ const obtenerMetodosPago = async () => {
   };
 
   let response = await fetchRequest(null, errorCatchMetodosPago, `${API_URL}/payment-method/all`);
-  console.log(response);
   response.data = response.data.filter(g => g.status);
 
   if (!response || !response.data.length) {
@@ -483,10 +482,131 @@ const validarErrores = function (serverError = null, limpiar = false) {
   return errores.length;
 }
 
+const buscarProducto = async (idProducto) => {
+  const onErrorCatch = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.error('Ha ocurrido un error al obtener el producto.');
+  };
+
+  // se hace la petición por AJAX al backend
+  return await fetchRequest(null, onErrorCatch, `${API_URL}/product/find/${idProducto}`);
+};
+
+const crearProductoEnCarrito = async (productos, inforProduct, e) => {
+
+  if (!idCliente)
+    idCliente = productos.data[0].user_id.id;
+
+  const errorCatchAddItem = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al agregar un elemento al carrito');
+  };
+
+  const onErrorResponse = (res, response) => {
+    console.log(response);
+    if (res.status == 400) {
+      console.log(response.message);
+    }
+  };
+
+  return await fetchRequest(onErrorResponse, errorCatchAddItem, `${API_URL}/shopping-cart/add-shopping-cart`, 'POST', {
+    product: parseInt(inforProduct.id),
+    count: parseInt(e.target.value),
+    customer: (perfil === 'CLI') ? null : parseInt(idCliente),
+  });
+};
+
+const actualizarProductoEnCarrito = async (inforProduct, e) => {
+  const errorCatchAddItem = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al actualizar un elemento en el carrito');
+  };
+
+  const onErrorResponse = (res, response) => {
+    console.log(response);
+    if (res.status == 400) {
+      console.log(response.message);
+    }
+  };
+  return await fetchRequest(onErrorResponse, errorCatchAddItem, `${API_URL}/shopping-cart/update-shopping-cart/${inforProduct.id}`, 'PATCH', {
+    count: parseInt(e.target.value),
+  });
+};
+
+const eliminarProductoCarrito = async (inforProduct) => {
+  const errorCatchDeleteItem = (e) => {
+    console.log(e);
+    if (e instanceof TypeError)
+      console.log('Ha ocurrido un error al eliminar un elemento en el carrito');
+  };
+
+  const onErrorResponse = (res, response) => {
+    console.log(response);
+    if (res.status == 400) {
+      console.log(response.message);
+    }
+  };
+
+  await fetchRequest(onErrorResponse, errorCatchDeleteItem, `${API_URL}/shopping-cart/delete-shopping-cart/${inforProduct.id}`, 'DELETE');
+};
+
+class CampoNumerico {
+
+  constructor(nodo) {
+    this.nodo = nodo;
+    this.valor = '';
+
+    this.empezarAEscucharEventos();
+  }
+
+  empezarAEscucharEventos() {
+    this.nodo.addEventListener('keydown', function (evento) {
+      const teclaPresionada = evento.key;
+      const teclaPresionadaEsUnNumero =
+        Number.isInteger(parseInt(teclaPresionada));
+
+      const sePresionoUnaTeclaNoAdmitida =
+        teclaPresionada != 'ArrowDown' &&
+        teclaPresionada != 'ArrowUp' &&
+        teclaPresionada != 'ArrowLeft' &&
+        teclaPresionada != 'ArrowRight' &&
+        teclaPresionada != 'Backspace' &&
+        teclaPresionada != 'Delete' &&
+        teclaPresionada != 'Enter' &&
+        !teclaPresionadaEsUnNumero;
+      const comienzaPorCero =
+        this.nodo.value.length === 0 &&
+        teclaPresionada == 0;
+
+      if (sePresionoUnaTeclaNoAdmitida || comienzaPorCero) {
+        evento.preventDefault();
+      } else if (teclaPresionadaEsUnNumero) {
+        this.valor += String(teclaPresionada);
+      }
+
+    }.bind(this));
+
+    this.nodo.addEventListener('input', function (evento) {
+      const cumpleFormatoEsperado = new RegExp(/^[0-9]+/).test(this.nodo.value);
+
+      if (!cumpleFormatoEsperado) {
+        this.nodo.value = '0';
+      } else {
+        this.valor = this.nodo.value;
+      }
+    }.bind(this));
+  }
+
+}
+
+
+
 // DELEGACIÓN DE EVENTOS
 d.addEventListener('DOMContentLoaded', async e => {
   perfil = localStorage.getItem('ROLE-USER');
-  console.log('carga el dom');
 
   $productCardTemplate = d.getElementById('card-product-template').content,
     $tabProductsTemplate = d.getElementById('tab-products-template').content,
@@ -498,6 +618,10 @@ d.addEventListener('DOMContentLoaded', async e => {
       keyboard: false,
       backdrop: 'static',
     });
+
+  d.getElementById('shoppingCartModal').addEventListener('hidden.bs.modal', function (event) {
+    clickEnBoton = false;
+  });
 
   $continueShoppingContainer = d.getElementById('continue-shopping-container');
   $finishShoppingContainer = d.getElementById('finish-shopping-container');
@@ -516,7 +640,6 @@ d.addEventListener('DOMContentLoaded', async e => {
   };
 
   let productos = await fetchRequest(null, errorCatchProductos, `${API_URL}/product/all`);
-  console.log(productos);
 
   // SI EL USUARIO NO ESTÁ AUTENTICADO SE ASUME QUE ES UN CLIENTE
   if (!perfil || perfil === 'CLI') {
@@ -539,6 +662,7 @@ d.addEventListener('DOMContentLoaded', async e => {
 d.addEventListener('click', async e => {
   if (e.target.matches('.add-cart, .add-cart *')) {
     agregarPrimerProducto = true;
+    clickEnBoton = true;
     modificarCarrito(e.target);
   }
 
@@ -573,7 +697,6 @@ d.addEventListener('click', async e => {
         description: "prueba de remison"
       });
 
-      console.log();
       if (remision) {
         appendAlert(`Pedido Realizado Correctamente. El consecutivo de tu orden es: ${remision.data.referralSave.consecutive}`, 'success', 90000);
         $modalShoppingCart.hide();
@@ -581,11 +704,6 @@ d.addEventListener('click', async e => {
       }
 
     }
-  }
-
-  if (e.target.matches('#sign-out, #sign-out *')) {
-    localStorage.clear();
-    location.href = 'login.html';
   }
 
 });
@@ -616,13 +734,85 @@ d.addEventListener('change', async e => {
 
     if (!idCliente && !productos.data.length) {
       idCliente = e.target[e.target.selectedIndex].value;
-      if (agregarPrimerProducto)
-        await addProductCart(idProductoSinCliente);
+      if (agregarPrimerProducto) {
+        if (clickEnBoton) {
+          await addProductCart(idProductoSinCliente);
+        } else {
+          await crearProductoEnCarrito(productos, idProductoSinCliente, $ultimoInputCantidadModificado);
+        }
+      }
       $liErrors.innerHTML = '';
-      construirCarrito();
+      if (agregarPrimerProducto)
+        construirCarrito();
     } else {
+
       idCliente = e.target[e.target.selectedIndex].value;
     }
 
+  }
+
+  if (e.target.matches('.cantidad')) {
+
+
+    $ultimoInputCantidadModificado = e;
+
+    // VALIDAMOS SI EL CARRITO ESTÁ VACÍO
+    const errorCatchCarritoCompras = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.log('Ha ocurrido un error al consultar el carrito de compras');
+    };
+
+    let productos = await fetchRequest(null, errorCatchCarritoCompras, `${API_URL}/shopping-cart/all`);
+    const inforProduct = obtenerInfoProducto(e.target);
+    const productCart = await buscarProductoEnCarrito(inforProduct.id);
+    const product = await buscarProducto(inforProduct.id);
+
+    if (parseInt(e.target.value) < 0) {
+      e.target.parentElement.nextElementSibling.textContent = "La cantidad no puede ser un número negativo";
+      return e.target.parentElement.nextElementSibling.classList.remove('d-none');
+    } else if (parseInt(e.target.value) > product.data.stock) {
+      e.target.parentElement.nextElementSibling.textContent = "Unidades disponibles insuficientes";
+      return e.target.parentElement.nextElementSibling.classList.remove('d-none');
+    } else if (!e.target.parentElement.nextElementSibling.classList.contains('d-none')) {
+      e.target.parentElement.nextElementSibling.classList.add('d-none');
+      if (parseInt(e.target.value) === 0) return;
+    }
+
+    let res;
+
+
+    if (!productos.data.length) {
+      if (perfil !== 'CLI') {
+        await obtenerClientes(true, idCliente || null);
+        if (idCliente) {
+          console.log('1 febrero');
+          crearProductoEnCarrito(productos, inforProduct, e)
+        } else if (!idCliente) {
+          // ABRIMOS EL CARRITO DE COMPRAS PARA QUE EL VENDEDOR SELECCIONE EL CLIENTE
+          $modalShoppingCart.show();
+          $liErrors.innerHTML = `<li>Seleccione un cliente</li>`
+          idProductoSinCliente = inforProduct;
+          agregarPrimerProducto = true;
+          return;
+        }
+      } else if (agregar) {
+        crearProductoEnCarrito(productos, inforProduct, e)
+      }
+    } else {
+
+      // si el producto no existe lo creamos
+      if (!productCart) {
+        console.log('1 febrero');
+        crearProductoEnCarrito(productos, inforProduct, e);
+      } else if (e.target.value > 0) {
+        actualizarProductoEnCarrito(inforProduct, e);
+      } else {
+        eliminarProductoCarrito(inforProduct);
+      }
+    }
+
+    if (res)
+      inforProduct.cantidad.value = e.target.value;
   }
 });

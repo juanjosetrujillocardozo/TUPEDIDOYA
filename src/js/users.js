@@ -331,9 +331,9 @@ const cargarUsuarios = async () => {
           title: 'Rol',
           render: function (data, type, row) {
             if (type === 'display') {
-              return data.name;
+              return data.description;
             }
-            return data.name;
+            return data.description;
           },
         },
         {
@@ -586,8 +586,8 @@ d.addEventListener('DOMContentLoaded', async e => {
     const $fragment = d.createDocumentFragment();
     response.data.forEach(elem => {
       const $option = d.createElement('option');
-      $option.setAttribute('value', elem.id);
-      $option.textContent = elem.name;
+      $option.setAttribute('value', elem.name);
+      $option.textContent = elem.description;
       $fragment.appendChild($option);
     });
     $roles.appendChild($fragment);
@@ -627,7 +627,7 @@ d.addEventListener('submit', async e => {
       user: $user.value,
       password: $password.value,
       email: $email.value,
-      role: $roles[$roles.selectedIndex].textContent,
+      role: $roles[$roles.selectedIndex].value,
       phone1: $phone1.value,
       phone2: $phone2.value,
       typePerson: $typePerson[$typePerson.selectedIndex].value,
@@ -647,13 +647,13 @@ d.addEventListener('submit', async e => {
       user: $user.value,
       password: $password.value,
       email: $email.value,
-      role: $roles[$roles.selectedIndex].textContent,
+      role: $roles[$roles.selectedIndex].value,
       phone1: $phone1.value,
       phone2: $phone2.value,
       typePerson: $typePerson[$typePerson.selectedIndex].value,
       address: $address.value,
-      departament_code: '1',
-      city_code: '1',
+      departament_code: $departament[$departament.selectedIndex].value,
+      city_code: $city[$city.selectedIndex].value,
       status: ($status[$status.selectedIndex].value === 'true') ? true : false,
       is_dropshipping: $isDropshipping.checked,
     });
@@ -720,10 +720,10 @@ d.addEventListener('click', async e => {
 
         roles.data.forEach(elem => {
           const $option = d.createElement('option');
-          $option.setAttribute('value', elem.id);
+          $option.setAttribute('value', elem.name);
           if (response.data.role.id == elem.id)
             $option.setAttribute('selected', 'true');
-          $option.textContent = elem.name;
+          $option.textContent = elem.description;
           $fragment.appendChild($option);
         });
         $rolesUserModal.innerHTML = '';
@@ -776,7 +776,7 @@ d.addEventListener('click', async e => {
         document: $documentUserModal.value,
         user: $userUserModal.value,
         email: $emailUserModal.value,
-        role: $rolesUserModal[$rolesUserModal.selectedIndex].textContent,
+        role: $rolesUserModal[$rolesUserModal.selectedIndex].value,
         phone1: $phone1UserModal.value,
         phone2: $phone2UserModal.value,
         typePerson: $typePersonUserModal[$typePersonUserModal.selectedIndex].value,
@@ -787,8 +787,6 @@ d.addEventListener('click', async e => {
         is_dropshipping: $isDropshippingUserModal.checked,
       }
     );
-
-    console.log(response);
 
     if (response) {
       cargarUsuarios();
@@ -886,4 +884,14 @@ d.addEventListener('change', e => {
     obtenerCiudades(e.target[e.target.selectedIndex].value);
     return;
   }
+
+  if (e.target === $roles && e.target.value !== 'VEN') {
+    $isDropshipping.checked = false;
+  }
+
+  if (e.target === $rolesUserModal && e.target.value !== 'VEN') {
+    $isDropshippingUserModal.checked = false;
+  }
+
+
 });

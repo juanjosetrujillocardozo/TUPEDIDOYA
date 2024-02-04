@@ -45,7 +45,7 @@
     <div class="top-bar row gx-0 align-items-center d-none d-xxl-flex">
       <div class="col-lg-6 px-5 text-start">
         <small class="direccion-empresa-parametro"><i class="fa fa-map-marker-alt me-2"></i></small>
-        <small class="ms-4 correo-empresa-parametro"><i class="fa fa-envelope me-2"></i></small>
+        <a class="ms-4 correo-empresa-parametro"><i class="fa fa-envelope me-2"></i></a>
       </div>
     </div>
 
@@ -104,15 +104,15 @@
           <!-- PARÁMETROS -->
           <a href="parametros.html" class="nav-item nav-link" id="parametros">Parámetros</a>
         </div>
-        <div class="d-none d-lg-flex ms-2">
-          <a class="btn-sm-square bg-white rounded-circle ms-3" href="perfil.html">
+        <div class="d-flex ms-2">
+          <a class="btn-sm-square bg-white rounded-circle ms-3 a-button" href="perfil.html">
             <small class="fa fa-user text-body"></small>
           </a>
-          <a class="btn-sm-square bg-white rounded-circle ms-3 btn-shopping-cart" data-bs-toggle="modal"
+          <a class="btn-sm-square bg-white rounded-circle ms-3 a-button btn-shopping-cart" data-bs-toggle="modal"
             data-bs-target="#shoppingCartModal">
             <small class="fa fa-shopping-bag text-body"></small>
           </a>
-          <a class="btn-sm-square bg-white rounded-circle ms-3" id="sign-out">
+          <a class="btn-sm-square bg-white rounded-circle ms-3 a-button" id="sign-out">
             <small class="fa fa-sign-out-alt text-body"></small>
           </a>
         </div>
@@ -240,8 +240,9 @@
             <i class="fa fa-map-marker-alt me-3"></i>
           </p>
           <p class="telefono-empresa-parametro"><i class="fa fa-phone-alt me-3"></i></p>
-          <p class="correo-empresa-parametro">
+          <p>
             <i class="fa fa-envelope me-3"></i>
+            <a class="correo-empresa-parametro"></a>
           </p>
         </div>
       </div>
@@ -345,6 +346,57 @@
   <script src="./../js/main.js"></script>
   <script src="./../js/load-products.js" type="module"></script>
   <script src="./../js/modules/cargar-parametros.js" type="module"></script>
+  <script>
+    class CampoNumerico {
+
+      constructor(selector) {
+        this.nodo = document.querySelector(selector);
+        this.valor = '';
+
+        this.empezarAEscucharEventos();
+      }
+
+      empezarAEscucharEventos() {
+        this.nodo.addEventListener('keydown', function (evento) {
+          const teclaPresionada = evento.key;
+          const teclaPresionadaEsUnNumero =
+            Number.isInteger(parseInt(teclaPresionada));
+
+          const sePresionoUnaTeclaNoAdmitida =
+            teclaPresionada != 'ArrowDown' &&
+            teclaPresionada != 'ArrowUp' &&
+            teclaPresionada != 'ArrowLeft' &&
+            teclaPresionada != 'ArrowRight' &&
+            teclaPresionada != 'Backspace' &&
+            teclaPresionada != 'Delete' &&
+            teclaPresionada != 'Enter' &&
+            !teclaPresionadaEsUnNumero;
+          const comienzaPorCero =
+            this.nodo.value.length === 0 &&
+            teclaPresionada == 0;
+
+          if (sePresionoUnaTeclaNoAdmitida || comienzaPorCero) {
+            evento.preventDefault();
+          } else if (teclaPresionadaEsUnNumero) {
+            this.valor += String(teclaPresionada);
+          }
+
+        }.bind(this));
+
+        this.nodo.addEventListener('input', function (evento) {
+          const cumpleFormatoEsperado = new RegExp(/^[0-9]+/).test(this.nodo.value);
+
+          if (!cumpleFormatoEsperado) {
+            this.nodo.value = this.valor;
+          } else {
+            this.valor = this.nodo.value;
+          }
+        }.bind(this));
+      }
+
+    }
+    
+  </script>
 
   <!-- Templates -->
 
@@ -353,7 +405,7 @@
     <div class="col-xl-3 col-lg-4 col-md-6" data-wow-delay="0.3s">
       <div class="product-item">
         <div class="position-relative bg-light overflow-hidden">
-          <img class="img-fluid w-100" src="./..//assets/img/product-2.jpg" alt="" />
+          <img class="img-fluid w-100" src="" alt="" style="height: 336px; object-fit: cover;" />
           <div class="bg-primary rounded text-white position-absolute start-0 top-0 m-4 py-1 px-3 label-oferta"
             style="display: none;">
           </div>
@@ -368,7 +420,7 @@
           <br>
           <span class="text-body label-stock"></span>
         </div>
-        <div class="d-flex border-top">
+        <div class="d-flex flex-column border-top">
           <!-- <small class="text-center py-2 w-100">
             <a class="text-body add-cart"><i class="fa fa-shopping-bag text-primary me-2"></i>Añadir al
               carrito</a>
@@ -377,10 +429,13 @@
             <a class="btn-sm-square bg-white rounded-circle ms-3 add-cart" style="justify-content: normal;">
               <small class="fa fa-plus text-body"></small>
             </a>
-            <div class="cantidad mx-2">0</div>
+            <input type="number" value="0" class="cantidad mx-2" pattern="^[0-9]+"
+              style="width: 20%; text-align: center;" />
             <a class="btn-sm-square bg-white rounded-circle ms-3 minus-cart" style="justify-content: normal;">
               <small class="fa fa-minus text-body"></small>
             </a>
+          </div>
+          <div class="error text-danger text-center mb-1 d-none">
           </div>
         </div>
       </div>

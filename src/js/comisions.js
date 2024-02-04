@@ -43,8 +43,6 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
 
     if (!$inputNombre.value)
       errores.push({ tp: 1, error: 'Falta el nombre de la comisión' });
-    else if (!(/^[a-zA-ZÁáÉéÍíÓóÚúÜüÑñ0-9\s]+$/.test($inputNombre.value)))
-      errores.push({ tp: 1, error: 'El nombre de comisión no es válido. Sólo se aceptan letras y números', });
 
     if (!$inputPorcentaje.value)
       errores.push({ tp: 2, error: 'Falta el porcentaje.', });

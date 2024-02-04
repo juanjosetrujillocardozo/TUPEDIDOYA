@@ -156,6 +156,9 @@ const cargarRemisiones = async () => {
 
               if (type === 'display') {
                 return `
+                <button type="button" id="btn-detail-referral" data-id-referral="${data.id}" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#detailReferralModal">
+                <i class="bi bi-list-check"></i>
+                </button>
                 <button type="button" id="btn-edit-product" data-id-referral="${data.id}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editStatusReferralModal">
                 <i class="bi bi-pencil-fill"></i>
                 </button>
@@ -245,6 +248,54 @@ d.addEventListener('click', async e => {
       cargarRemisiones();
       myModal.hide();
       appendAlert('Estado de remisión editado correctamente');
+    }
+  }
+
+  if (e.target.matches('#btn-detail-referral, #btn-detail-referral > *')) {
+
+    const idReferral = (e.target.matches('#btn-detail-referral'))
+      ? e.target.getAttribute('data-id-referral')
+      : e.target.parentElement.getAttribute('data-id-referral');
+
+    console.log(idReferral);
+
+    const onErrorCatch = (e) => {
+      console.log(e);
+      if (e instanceof TypeError)
+        console.error('Ha ocurrido un error al obtener la remisión.');
+    };
+
+    // se hace la petición por AJAX al backend
+    const response = await fetchRequest(null, onErrorCatch, `${API_URL}/referral/find/${idReferral}`);
+
+    if (response) {
+
+      const $tbodyDetailReferral = d.querySelector('#detail-referral tbody'),
+        $detailReferralFragment = d.createDocumentFragment();
+
+      let subtotal = 0;
+
+        $tbodyDetailReferral.innerHTML = '';
+      for (const product of response.data.arrayProductReferral) {
+        const $tr = d.createElement('tr');
+        console.log(product);
+        let total = product.quantity * product.unit_value;
+        subtotal += total;
+        $tr.innerHTML = `
+          <td>${product.product.name}</td>
+          <td>${product.quantity}</td>
+          <td>$${parseInt(product.unit_value).toLocaleString("en") }</td>
+          <td>$${total.toLocaleString("en")}</td>
+          <td>$${parseInt(product.discount_value).toLocaleString("en")}</td>
+          <td>$${parseInt(product.commission_value).toLocaleString("en")}</td>
+          
+        `;
+        $detailReferralFragment.appendChild($tr);
+      }
+      $tbodyDetailReferral.appendChild($detailReferralFragment);
+
+      
+
     }
   }
 });
