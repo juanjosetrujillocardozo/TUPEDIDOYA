@@ -273,25 +273,44 @@ d.addEventListener('click', async e => {
       const $tbodyDetailReferral = d.querySelector('#detail-referral tbody'),
         $detailReferralFragment = d.createDocumentFragment();
 
-      let subtotal = 0;
+      let subtotal = 0,
+          descuentoTotal = 0,
+          comisionTotal = 0;
 
         $tbodyDetailReferral.innerHTML = '';
       for (const product of response.data.arrayProductReferral) {
         const $tr = d.createElement('tr');
         console.log(product);
-        let total = product.quantity * product.unit_value;
+        let total = product.quantity * product.unit_value,
+          descuentoProducto = parseInt(product.discount_value),
+          comisionProducto = parseInt(product.commission_value);
+
         subtotal += total;
+        descuentoTotal += descuentoProducto;
+        comisionTotal += comisionProducto;
         $tr.innerHTML = `
           <td>${product.product.name}</td>
           <td>${product.quantity}</td>
           <td>$${parseInt(product.unit_value).toLocaleString("en") }</td>
           <td>$${total.toLocaleString("en")}</td>
-          <td>$${parseInt(product.discount_value).toLocaleString("en")}</td>
-          <td>$${parseInt(product.commission_value).toLocaleString("en")}</td>
+          <td>$${descuentoProducto.toLocaleString("en")}</td>
+          <td>$${comisionProducto.toLocaleString("en")}</td>
           
         `;
         $detailReferralFragment.appendChild($tr);
       }
+
+      const $trTotales = d.createElement('tr');
+      $trTotales.innerHTML = `
+          <td></td>
+          <td></td>
+          <td style="font-weight: bold;">Total: </td>
+          <td style="font-weight: bold;">$${subtotal.toLocaleString("en")}</td>
+          <td style="font-weight: bold;">$${descuentoTotal.toLocaleString("en")}</td>
+          <td style="font-weight: bold;">$${comisionTotal.toLocaleString("en")}</td>
+        `;
+      $detailReferralFragment.appendChild($trTotales);
+
       $tbodyDetailReferral.appendChild($detailReferralFragment);
 
       
