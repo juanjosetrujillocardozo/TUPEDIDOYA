@@ -95,7 +95,7 @@ const construirTarjetasProductos = async (productos, vendedor = false) => {
       $cardProduct.querySelector('.card-product-name').textContent = product.name;
       const price = parseInt(product.price);
       $price.textContent = `$${price.toLocaleString("en")}`;
-      $img.src = (product.img) ? `http://localhost:3000/${product.img}` : "./..//assets/img/producto-defecto.jpg";
+      $img.src = (product.img) ? `${API_URL}/${product.img}` : "./..//assets/img/producto-defecto.jpg";
 
       if (perfil) {
         const productShoppingCart = await buscarProductoEnCarrito(product.id);
@@ -128,6 +128,7 @@ const construirTarjetasProductos = async (productos, vendedor = false) => {
       } else {
         txt = 'Sin restricción de inventario';
       }
+      $cardProduct.querySelector('.descripcion').textContent = product.description;
 
       $labelStock.textContent = txt;
       $productList.prepend($cardProduct);
@@ -701,6 +702,7 @@ d.addEventListener('click', async e => {
         appendAlert(`Pedido Realizado Correctamente. El consecutivo de tu orden es: ${remision.data.referralSave.consecutive}`, 'success', 90000);
         $modalShoppingCart.hide();
         d.getElementById('form-shopping-cart').reset();
+        d.querySelectorAll('input.cantidad').forEach(input => input.value = 0);
       }
 
     }

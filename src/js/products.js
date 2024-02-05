@@ -263,7 +263,7 @@ const cargarProductos = async () => {
               console.log(data);
               // Personaliza el contenido de la celda para mostrar la imagen
               return `<img
-                        src="http://localhost:3000/${data}"
+                        src="${API_URL}/${data}"
                         alt="Sin imagen"
                         style="
                           width: 100px;
@@ -517,7 +517,7 @@ d.addEventListener('click', async e => {
 
     if (response) {
       console.log(response);
-      d.getElementById('img-product-modal').src = `http://localhost:3000/${response.data.img}`;
+      d.getElementById('img-product-modal').src = `${API_URL}/${response.data.img}`;
 
 
       $codeProductModal.value = response.data.code;

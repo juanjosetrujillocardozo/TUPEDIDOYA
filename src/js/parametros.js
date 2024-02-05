@@ -27,8 +27,8 @@ const validarErrores = function (serverError = null, limpiar = false) {
 
     if (!$nombreEmpresa.value)
       errores.push({ tp: 1, error: 'Falta el nombre de la empresa' });
-    else if (!(/^[a-zA-ZÁáÉéÍíÓóÚúÜüÑñ0-9.\s]+$/.test($nombreEmpresa.value)))
-      errores.push({ tp: 1, error: 'El nombre de empresa introducido no es válido. Sólo se aceptan letras y números', });
+    // else if (!(/^[a-zA-ZÁáÉéÍíÓóÚúÜüÑñ0-9.\s]+$/.test($nombreEmpresa.value)))
+    //   errores.push({ tp: 1, error: 'El nombre de empresa introducido no es válido. Sólo se aceptan letras y números', });
 
     if (!(/^[A-Za-zÁáÉéÍíÓóÚúÜüÑñ0-9/\s.,#-]+$/.test($direccion.value)))
       errores.push({ tp: 2, error: 'La dirección introducida no es válida.', });
