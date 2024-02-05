@@ -650,9 +650,8 @@ d.addEventListener('click', async e => {
         );
       }
 
-      // const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/group/delete-group/${idProduct}`, 'DELETE');
+      const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/product/delete-product/${idProduct}`, 'DELETE');
 
-      const response = true;
       if (response) {
         cargarProductos();
         deleteConfirmationAlert.fire(
