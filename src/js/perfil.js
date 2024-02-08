@@ -17,6 +17,7 @@ let $name,
   $address,
   $departament,
   $city,
+  $rol,
   $liErrors,
   $liErrorsUserModal,
   $passwordUserModal,
@@ -337,6 +338,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $phone2 = d.getElementById('phone2');
   $address = d.getElementById('address');
   $departament = d.getElementById('departament');
+  $rol = d.getElementById('rol');
   $city = d.getElementById('city');
   $liErrors = d.getElementById('errors');
   $changePassword = d.getElementById('change-password');
@@ -380,6 +382,7 @@ d.addEventListener('DOMContentLoaded', async e => {
     $phone1.value = response.data.phone1;
     $phone2.value = response.data.phone2;
     $address.value = response.data.address;
+    $rol.value = response.data.role.name;
 
     obtenerTiposDocumento(response.data.type_document_id.id);
     obtenerDepartamentos(response.data.departament_code);

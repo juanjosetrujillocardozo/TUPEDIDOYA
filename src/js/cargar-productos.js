@@ -71,7 +71,13 @@ d.addEventListener('click', async e => {
         console.error('Ha ocurrido un error al cargar los productos.');
     };
 
-    const responseImg = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/product/change-product`, 'POST', formData, true, false, true);
+    const responseUpload = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/product/change-product`, 'POST', formData, true, false, true);
+
+    console.log(responseUpload);
+    if (!responseUpload)
+      return appendAlert('Ha ocurrido un error al cargar los productos', 'danger');
+    
+    $errors.innerHTML = '';
     appendAlert('Productos cargados correctamente');
   }
 
@@ -84,9 +90,7 @@ d.addEventListener('change', e => {
     console.log($inputArchivo.files[0]);
     if (
       !$inputArchivo.files[0] ||
-      ($inputArchivo.files[0].type !== "application/vnd.ms-excel" &&
-      $inputArchivo.files[0].type !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
-      $inputArchivo.files[0].type !== "text/csv")
+      ($inputArchivo.files[0].type !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     ) {
       d.getElementById('err-formato-archivo').classList.remove('d-none');
       $btnSubir.disabled = true;

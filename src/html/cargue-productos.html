@@ -52,7 +52,7 @@
         <a class="ms-4 correo-empresa-parametro"><i class="fa fa-envelope me-2"></i></a>
       </div>
     </div>
-
+  
     <nav class="navbar navbar-expand-lg navbar-light py-lg-0 px-lg-5 wow fadeIn" data-wow-delay="0.1s">
       <a href="index.html" class="navbar-brand ms-4 ms-lg-0">
         <h1 class="fw-bold text-secondary m-0 nombre-empresa-parametro">
@@ -74,7 +74,7 @@
               <a href="usuarios.html" class="dropdown-item">Usuarios</a>
             </div>
           </div>
-
+  
           <!-- VENTAS -->
           <div class="nav-item dropdown" id="ventas">
             <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Ventas</a>
@@ -83,6 +83,7 @@
               <a href="descuentos.html" class="dropdown-item">Descuentos</a>
               <a href="metodos-pago.html" class="dropdown-item">Métodos de Pago</a>
               <a href="remisiones.html" class="dropdown-item">Remisiones</a>
+              <a href="descarga-remisiones.html" class="dropdown-item">Descargar Remisiones</a>
               <a href="pagos-comisiones.html" class="dropdown-item">Pagos Comisiones</a>
             </div>
           </div>
@@ -92,6 +93,7 @@
             <div class="dropdown-menu m-0">
               <a href="productos.html" class="dropdown-item">Productos</a>
               <a href="grupos-inventario.html" class="dropdown-item">Grupos de Inventario</a>
+              <a href="cargue-productos.html" class="dropdown-item">Cargue Productos</a>
             </div>
           </div>
           <!-- ZONAS -->
@@ -108,9 +110,13 @@
           <!-- PARÁMETROS -->
           <a href="parametros.html" class="nav-item nav-link" id="parametros">Parámetros</a>
         </div>
-        <div class="d-none d-lg-flex ms-2">
+        <div class="d-flex ms-2">
           <a class="btn-sm-square bg-white rounded-circle ms-3 a-button" href="perfil.html">
             <small class="fa fa-user text-body"></small>
+          </a>
+          <a class="btn-sm-square bg-white rounded-circle ms-3 a-button btn-shopping-cart" data-bs-toggle="modal"
+            data-bs-target="#shoppingCartModal">
+            <small class="fa fa-shopping-bag text-body"></small>
           </a>
           <a class="btn-sm-square bg-white rounded-circle ms-3 a-button" id="sign-out">
             <small class="fa fa-sign-out-alt text-body"></small>
@@ -144,7 +150,7 @@
               <ul id="errors">
               </ul>
             </div>
-            <p class="text-danger d-none" id="err-formato-archivo">El formato del archivo no es válido. Sólo se aceptan formatos: csv, xlsx, xls</p>
+            <p class="text-danger d-none" id="err-formato-archivo">El formato del archivo no es válido. Sólo se aceptan formatos xlsx</p>
           </div>
         </div>
       </div>
