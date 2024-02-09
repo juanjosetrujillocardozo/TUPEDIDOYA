@@ -61,14 +61,15 @@ const construirTarjetasProductos = async (productos, vendedor = false) => {
     // CREAMOS EL BOTÓN ASOCIADO A CADA TAB DE CATEGORÍA
     const $tabButton = d.importNode($tabButtonTemplate, true);
 
-    const $aTabButton = $tabButton.querySelector('.tab-button');
+    const $aTabButton = $tabButton.querySelector('.tab-button'),
+      nomCategoria = categoria.replace(" ", "-");
 
-    $aTabButton.setAttribute('href', `#tab-${categoria}`);
+    $aTabButton.setAttribute('href', `#tab-${nomCategoria}`);
     $aTabButton.textContent = categoria;
 
     // CREAMOS LA TAB PARA CADA CATEGORÍA DE PRODUCTOS
     const $tabProducts = d.importNode($tabProductsTemplate, true);
-    $tabProducts.querySelector('.tab').setAttribute('id', `tab-${categoria}`);
+    $tabProducts.querySelector('.tab').setAttribute('id', `tab-${nomCategoria}`);
     if (!tabActive) {
       $tabProducts.querySelector('.tab').classList.add('active');
       $aTabButton.classList.add('active');
@@ -355,7 +356,6 @@ const construirCarrito = async () => {
   }
 
   if (productos && productos.data.length) {
-
     // AGREGAMOS EL BOTON DE COMPRA
     $continueShoppingContainer.classList.remove('d-none');
 
@@ -393,6 +393,8 @@ const construirCarrito = async () => {
 
     $tbodyShoppingCart.appendChild($tr);
 
+  } else {
+    $continueShoppingContainer.classList.add('d-none');
   }
 
 };
@@ -461,9 +463,11 @@ const validarErrores = function (serverError = null, limpiar = false) {
 
   }
 
+  
   const tpErrors = {};
   $liErrors.innerHTML = '';
   if (errores.length) {
+    console.log(errores);
     const $fragment = d.createDocumentFragment();
     errores.forEach(e => {
       tpErrors[e.tp] = true;
@@ -496,7 +500,7 @@ const buscarProducto = async (idProducto) => {
 
 const crearProductoEnCarrito = async (productos, inforProduct, e) => {
 
-  if (!idCliente)
+  if (perfil !== 'CLI' && !idCliente)
     idCliente = productos.data[0].user_id.id;
 
   const errorCatchAddItem = (e) => {
@@ -686,13 +690,21 @@ d.addEventListener('click', async e => {
 
     if (!errors) {
 
+      const onErrorResponse = (res, response) => {
+        console.log(response, res);
+        if (res.status == 400) {
+          console.log(response.message);
+          validarErrores([{ error: response.message }]);
+        }
+      };
+
       const errorCatchCrearRemision = (e) => {
         console.log(e);
         if (e instanceof TypeError)
           console.log('Ha ocurrido un error al crear la remisión');
       };
 
-      const remision = await fetchRequest(null, errorCatchCrearRemision, `${API_URL}/referral/create-referral`, 'POST', {
+      const remision = await fetchRequest(onErrorResponse, errorCatchCrearRemision, `${API_URL}/referral/create-referral`, 'POST', {
         payment_method: parseInt($paymentMethod[$paymentMethod.selectedIndex].value),
         zone: parseInt($zone[$zone.selectedIndex].value),
         description: "prueba de remison"
@@ -703,6 +715,24 @@ d.addEventListener('click', async e => {
         $modalShoppingCart.hide();
         d.getElementById('form-shopping-cart').reset();
         d.querySelectorAll('input.cantidad').forEach(input => input.value = 0);
+
+        d.querySelector('.categorias').innerHTML = '';
+        d.querySelector('.tab-content').innerHTML = '';
+
+        const errorCatchProductos = (e) => {
+          console.log(e);
+          if (e instanceof TypeError)
+            console.log('Ha ocurrido un error al obtener los productos');
+        };
+
+        let productos = await fetchRequest(null, errorCatchProductos, `${API_URL}/product/all`);
+
+        // SI EL USUARIO NO ESTÁ AUTENTICADO SE ASUME QUE ES UN CLIENTE
+        if (!perfil || perfil === 'CLI') {
+          construirTarjetasProductos(productos.data);
+        } else {
+          construirTarjetasProductos(productos.data, true);
+        }
       }
 
     }
@@ -778,7 +808,7 @@ d.addEventListener('change', async e => {
       return e.target.parentElement.nextElementSibling.classList.remove('d-none');
     } else if (!e.target.parentElement.nextElementSibling.classList.contains('d-none')) {
       e.target.parentElement.nextElementSibling.classList.add('d-none');
-      if (parseInt(e.target.value) === 0) return;
+      if (!productos.data.length && parseInt(e.target.value) === 0) return;
     }
 
     let res;
@@ -788,7 +818,6 @@ d.addEventListener('change', async e => {
       if (perfil !== 'CLI') {
         await obtenerClientes(true, idCliente || null);
         if (idCliente) {
-          console.log('1 febrero');
           crearProductoEnCarrito(productos, inforProduct, e)
         } else if (!idCliente) {
           // ABRIMOS EL CARRITO DE COMPRAS PARA QUE EL VENDEDOR SELECCIONE EL CLIENTE
@@ -798,14 +827,13 @@ d.addEventListener('change', async e => {
           agregarPrimerProducto = true;
           return;
         }
-      } else if (agregar) {
+      } else if (e.target.value > 0) {
         crearProductoEnCarrito(productos, inforProduct, e)
       }
     } else {
 
       // si el producto no existe lo creamos
       if (!productCart) {
-        console.log('1 febrero');
         crearProductoEnCarrito(productos, inforProduct, e);
       } else if (e.target.value > 0) {
         actualizarProductoEnCarrito(inforProduct, e);

@@ -267,6 +267,8 @@ d.addEventListener('click', async e => {
 
     // se hace la petición por AJAX al backend
     const response = await fetchRequest(null, onErrorCatch, `${API_URL}/referral/find/${idReferral}`);
+    console.log(response);
+    
 
     if (response) {
 
