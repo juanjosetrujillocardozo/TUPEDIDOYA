@@ -193,26 +193,6 @@ const cargarRemisiones = async (data) => {
             return zona;
           },
         },
-        {
-          title: 'Acciones',
-          orderable: false, // No permite ordenar esta columna
-          data: 'data',
-          render: function (data, type, row) {
-            if (data.status !== '4') {
-
-              if (type === 'display') {
-                return `
-                <button type="button" id="btn-edit-product" data-id-referral="${data.id}" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editStatusReferralModal">
-                <i class="bi bi-pencil-fill"></i>
-                </button>
-                `
-              }
-              return data.id;
-            } else {
-              return '';
-            }
-          }
-        }
       ],
     });
 
