@@ -1,6 +1,6 @@
 import { FRONT_URL } from './../../constants/constants.js';
 
-export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null, autenticacionRequerida = true, reporte = false, subirImagen = false) => {
+export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, method = 'GET', body = null, autenticacionRequerida = true, reporte = false, subirImagen = false, nombreArchivo = 'nombre_archivo') => {
 
   try {
     const dataRequest = {
@@ -37,7 +37,7 @@ export const fetchRequest = async (onErrorResponse = null, onErrorCatch, URL, me
       // Crear un enlace (link) y simular un clic para descargar el archivo
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'nombre_del_archivo.xlsx';
+      a.download = `${nombreArchivo}.xlsx`;
       document.body.appendChild(a);
       a.click();
 

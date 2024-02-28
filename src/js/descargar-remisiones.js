@@ -96,7 +96,7 @@ d.addEventListener('click', async e => {
 
     console.log($fechaIni);
 
-    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/referral/excel-referral/${$fechaIni.value}`, 'POST', null, true, true);
+    const response = await fetchRequest(onErrorResponse, onErrorCatch, `${API_URL}/referral/excel-referral/${$fechaIni.value}`, 'POST', null, true, true, false, `modelo_importacion_remisiones_del_${$fechaIni.value}`);
 
 
     modalFecha.hide();

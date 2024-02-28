@@ -13,7 +13,7 @@ let $code,
   $comision,
   $descuento,
   $status,
-  $inventoriable,
+  // $inventoriable,
   $grupoInventario,
   $typeProduct,
   $imgProduct,
@@ -27,7 +27,7 @@ let $code,
   $priceProductModal,
   $comisionProductModal,
   $descuentoProductModal,
-  $inventoriableProductModal,
+  // $inventoriableProductModal,
   $statusProductModal,
   $typeProductModal,
   $imgProductModal,
@@ -49,7 +49,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
   const $inputStockMin = editar ? $stockMinProductModal : $stockMin;
   const $inputPrice = editar ? $priceProductModal : $price;
   const $listErrors = editar ? $liErrorsProductModal : $liErrors;
-  const $inputInventoriable = editar ? $inventoriableProductModal : $inventoriable;
+  // const $inputInventoriable = editar ? $inventoriableProductModal : $inventoriable;
   const $inputComision = editar ? $comisionProductModal : $comision;
   const $inputDescuento = editar ? $descuentoProductModal : $descuento;
   const $inputImg = editar ? $imgProductModal : $imgProduct;
@@ -72,7 +72,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
     if (!$inputGrupoInventario.selectedIndex)
       errores.push({ tp: 4, error: 'Debe seleccionar un grupo de inventario.', });
 
-    if ($inputInventoriable.checked) {
+    // if ($inputInventoriable.checked) {
 
       if (!$inputStock.value)
         errores.push({ tp: 5, error: 'Falta el stock del producto' });
@@ -83,7 +83,7 @@ const validarErrores = function (serverError = null, editar = false, limpiar = f
         errores.push({ tp: 6, error: 'Falta el stock mínimo del producto' });
       else if (!(/^[0-9]+$/.test($inputStockMin.value)) && $inputStockMin > 0)
         errores.push({ tp: 6, error: 'El stock introducido no es válido. Sólo se aceptan números enteros mayores a cero.', });
-    }
+    // }
     if (!$inputPrice.value)
       errores.push({ tp: 7, error: 'Falta el precio del producto' });
     else if (!(/^[0-9]+$/.test($inputPrice.value)))
@@ -403,7 +403,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $status = d.getElementById('status');
   $comision = d.getElementById('comision');
   $descuento = d.getElementById('discount');
-  $inventoriable = d.getElementById('inventoriable');
+  // $inventoriable = d.getElementById('inventoriable');
   $grupoInventario = d.getElementById('grupo-inventario');
   $typeProduct = d.getElementById('type-product');
   $imgProduct = d.getElementById('img-product');
@@ -411,7 +411,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $liErrors = d.getElementById('errors');
   $tbody = d.querySelector('#products > tbody');
 
-  $inventoriable.setAttribute('checked', 'true');
+  // $inventoriable.setAttribute('checked', 'true');
 
   // INPUTS DE LA MODAL
   $idProductModal = d.querySelector('#editProductModal #id-product');
@@ -424,7 +424,7 @@ d.addEventListener('DOMContentLoaded', async e => {
   $comisionProductModal = d.querySelector('#editProductModal #comision');
   $descuentoProductModal = d.querySelector('#editProductModal #discount');
   $statusProductModal = d.querySelector('#editProductModal #status');
-  $inventoriableProductModal = d.querySelector('#inventoriable-modal');
+  // $inventoriableProductModal = d.querySelector('#inventoriable-modal');
   $typeProductModal = d.querySelector('#editProductModal #type-product');
   $imgProductModal = d.querySelector('#editProductModal #img-product');
   $liErrorsProductModal = d.querySelector('#editProductModal #errors');
@@ -471,10 +471,10 @@ d.addEventListener('submit', async e => {
       code: $code.value,
       name: $name.value,
       inventory_group_id: parseInt($grupoInventario[$grupoInventario.selectedIndex].value),
-      stock: $inventoriable.checked ? parseInt($stock.value) : null,
-      min_tock: $inventoriable.checked ? parseInt($stockMin.value) : null,
+      stock: parseInt($stock.value),
+      min_tock: parseInt($stockMin.value),
       price: parseInt($price.value),
-      inventoried: $inventoriable.checked,
+      inventoried: true,
       type: $typeProduct[$typeProduct.selectedIndex].value,
       status: parseInt($status[$status.selectedIndex].value) ? true : false,
       commission: parseInt($comision[$comision.selectedIndex].value),
@@ -526,7 +526,7 @@ d.addEventListener('click', async e => {
       $stockMinProductModal.value = response.data.min_tock;
       $priceProductModal.value = parseInt(response.data.price);
       $comisionProductModal.value = "pendiente";
-      $inventoriableProductModal.checked = response.data.inventoried;
+      // $inventoriableProductModal.checked = response.data.inventoried;
 
       $statusProductModal.innerHTML = `
         <option value="1">Activo</option>
@@ -587,10 +587,10 @@ d.addEventListener('click', async e => {
       code: $codeProductModal.value,
       name: $nameProductModal.value,
       inventory_group_id: parseInt($grupoInventarioProductModal[$grupoInventarioProductModal.selectedIndex].value),
-      stock: $inventoriableProductModal.checked ? parseInt($stockProductModal.value) : null,
-      min_tock: $inventoriableProductModal.checked ? parseInt($stockMinProductModal.value) : null,
+      stock: parseInt($stockProductModal.value),
+      min_tock: parseInt($stockMinProductModal.value),
       price: parseInt($priceProductModal.value),
-      inventoried: $inventoriableProductModal.checked,
+      inventoried: true,
       typeProduct: $typeProductModal[$typeProductModal.selectedIndex].value,
       status: parseInt($statusProductModal[$statusProductModal.selectedIndex].value) ? true : false,
       commission: parseInt($comisionProductModal[$comisionProductModal.selectedIndex].value),
@@ -605,10 +605,10 @@ d.addEventListener('click', async e => {
         code: $codeProductModal.value,
         name: $nameProductModal.value,
         inventory_group_id: parseInt($grupoInventarioProductModal[$grupoInventarioProductModal.selectedIndex].value),
-        stock: $inventoriableProductModal.checked ? parseInt($stockProductModal.value) : null,
-        min_tock: $inventoriableProductModal.checked ? parseInt($stockMinProductModal.value) : null,
+        stock: parseInt($stockProductModal.value),
+        min_tock: parseInt($stockMinProductModal.value),
         price: parseInt($priceProductModal.value),
-        inventoried: $inventoriableProductModal.checked,
+        inventoried: true,
         type: $typeProductModal[$typeProductModal.selectedIndex].value,
         status: parseInt($statusProductModal[$statusProductModal.selectedIndex].value) ? true : false,
         commission: parseInt($comisionProductModal[$comisionProductModal.selectedIndex].value),

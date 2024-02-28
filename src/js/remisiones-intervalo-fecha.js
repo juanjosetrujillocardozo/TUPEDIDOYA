@@ -270,7 +270,7 @@ d.addEventListener('click', async e => {
         console.log('Ha ocurrido un error al generar el reporte de remisiones');
     };
 
-    let response = await fetchRequest(null, errorCatchReporte, `${API_URL}/referral/excel-referral-download-date?date-init=${$fechaIni.value}&date-end=${$fechaFin.value}`, 'POST', null, true, true);
+    let response = await fetchRequest(null, errorCatchReporte, `${API_URL}/referral/excel-referral-download-date?date-init=${$fechaIni.value}&date-end=${$fechaFin.value}`, 'POST', null, true, true, false, `remisiones_del_${$fechaIni.value}_al_${$fechaFin.value}`);
 
     console.log(response);
   }

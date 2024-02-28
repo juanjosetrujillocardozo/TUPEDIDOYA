@@ -274,7 +274,7 @@ d.addEventListener('click', async e => {
         console.log('Ha ocurrido un error al generar el reporte de remisiones');
     };
 
-    let response = await fetchRequest(null, errorCatchReporte, `${API_URL}/referral/excel-referral-download-customer/${$clientes[$clientes.selectedIndex].value}`, 'POST', null, true, true);
+    let response = await fetchRequest(null, errorCatchReporte, `${API_URL}/referral/excel-referral-download-customer/${$clientes[$clientes.selectedIndex].value}`, 'POST', null, true, true, false, `remisiones_por_cliente_${$clientes[$clientes.selectedIndex].textContent}`);
 
     console.log(response);
   }
